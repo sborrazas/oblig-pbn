@@ -2,8 +2,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "utils/debug.h"
+#include "modules/queue_mem.h"
 
 int main(int argc, const char* argv[]) {
+    int shmid;
+    create_queue_mem(10, 10, 10, &shmid);
+
+    delete_queue_mem(shmid);
+
     return 0;
     /*
     int a = 1;
