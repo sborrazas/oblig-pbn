@@ -1,12 +1,9 @@
-#include "utils/shared_mem.h"
-#include "utils/debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "utils/debug.h"
 
 int main(int argc, const char* argv[]) {
-    init_shared_mem(10, 10, 10);
-
     return 0;
     /*
     int a = 1;

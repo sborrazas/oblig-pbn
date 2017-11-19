@@ -3,6 +3,6 @@
 set -e
 set -o pipefail
 
-./scripts/run_cola_mensajes.sh
-./scripts/run_fuente.sh
-./scripts/run_procesador.sh
+./scripts/run_message_queue.sh
+./scripts/run_origin.sh
+./scripts/run_processor.sh

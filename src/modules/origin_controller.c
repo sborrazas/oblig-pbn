@@ -2,4 +2,6 @@
 
 int init_origen() {
     log_err("`init_origen` not implemented.");
+
+    return 0;
 }

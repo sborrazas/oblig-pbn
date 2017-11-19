@@ -3,6 +3,6 @@
 set -e
 set -o pipefail
 
-make build/fuente
+make build/origin
 
-./build/fuente
+./build/origin

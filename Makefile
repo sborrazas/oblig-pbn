@@ -3,7 +3,7 @@ BUILD_DIR = build
 
 CC = gcc
 CFLAGS = -O3 -pipe -Wall -Wextra -pedantic -Wno-gnu-zero-variadic-macro-arguments
-MAIN_FILES = cola_mensajes.c fuente.c procesador.c
+MAIN_FILES = message_queue.c origin.c processor.c
 
 C_SOURCES := $(filter-out $(MAIN_FILES), \
 													$(shell find $(SOURCE_DIR) -name '*.c' | cut -d '/' -f 2-))
