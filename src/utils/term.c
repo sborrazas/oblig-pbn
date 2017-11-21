@@ -1,7 +1,16 @@
 #include "term.h"
 
-unsigned int get_option(unsigned int num_options, const char* options[]) {
-    log_err("`utils/term/get_option` not implemented.");
+int term_int_option(int argc, char* const argv[], const struct option* options, int index) {
+    int c;
+    int option_index;
 
-    return 0;
+    optind = 0;
+
+    while ((c = getopt_long(argc, argv, "m:o:p:", options, &option_index)) != -1) {
+        if (option_index == index) {
+            return atoi(optarg);
+        }
+    }
+
+    return -1;
 }
