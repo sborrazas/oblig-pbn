@@ -4,9 +4,7 @@
 #include "../utils/debug.h"
 #include "../utils/shared_mem.h"
 
-#define KEY_PATHNAME "/Users/sborrazas/hola"
-// #define KEY_PATHNAME "/etc/msg_queue.conf"
-#define PROJ_ID 123
+#define KEY_PATHNAME "/etc/msg_queue.conf"
 
 #define NAME_SIZE 8
 #define DATE_SIZE 23
@@ -33,7 +31,7 @@ typedef struct queue_mem {
   Client*  processors;
 } Queue_Mem;
 
-Queue_Mem* create_queue_mem(int num_messages, int num_origins, int num_processors, int* shmid);
+Queue_Mem* create_queue_mem(int num_msg, int num_orig, int num_proc, int proj_id, int* shmid);
 
 void delete_queue_mem(int shmid);
 

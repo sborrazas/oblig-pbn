@@ -3,32 +3,21 @@
 #include <unistd.h>
 #include "utils/debug.h"
 #include "modules/queue_mem.h"
+#include "utils/random.h"
+
+#define MAX_PROJ_ID 16777216
 
 int main(int argc, const char* argv[]) {
     int shmid;
-    create_queue_mem(10, 10, 10, &shmid);
+    int proj_id = random_max(MAX_PROJ_ID);
+
+    create_queue_mem(10, 10, 10, proj_id, &shmid);
 
     delete_queue_mem(shmid);
 
     return 0;
-    /*
-    int a = 1;
-    int pid = fork();
-    printf("hola!\n");
-
-    if (pid == 0) {
-      printf("soy el hijo y tengo pid %d!\n", getpid());
-      exec("build/hijo");
-      init_cm(mem);
-      a++;
-    }
-    else if (pid > 0) {
-      printf("soy el padre y tengo pid %d y mi hijo tiene pid %d!\n", getpid(), pid);
-      a--;
-    }
-
-    printf("A TIENE VALOR: %d\n", a);*/
 }
+
 /*
 int callback() { // Se llama cuando un hijo se muere (SIGCHLD)
   int pid_hijo = wait();
