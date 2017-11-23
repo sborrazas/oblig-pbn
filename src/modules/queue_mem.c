@@ -15,10 +15,16 @@ Queue_Mem* create_queue_mem(int max_msg, int max_orig, int max_proc, int proj_id
     queue_mem->num_origins = 0;
     queue_mem->num_processors = 0;
 
-    queue_mem->hp_messages = (Message*)sizeof(Queue_Mem);
-    queue_mem->lp_messages = queue_mem->hp_messages + sizeof(Message) * max_msg;
+    queue_mem->hp_messages.messages = (Message*)sizeof(Queue_Mem);
+    queue_mem->hp_messages.size = max_msg;
+    queue_mem->hp_messages.start_index = 0;
+    queue_mem->hp_messages.end_index = 0;
+    queue_mem->lp_messages.messages = queue_mem->hp_messages.messages + sizeof(Message) * max_msg;
+    queue_mem->lp_messages.size = max_msg;
+    queue_mem->lp_messages.start_index = 0;
+    queue_mem->lp_messages.end_index = 0;
 
-    queue_mem->origins = (Client*)queue_mem->hp_messages + sizeof(Message) * max_msg;
+    queue_mem->origins = (Client*)queue_mem->hp_messages.messages + sizeof(Message) * max_msg;
     queue_mem->processors = queue_mem->origins + sizeof(Client) * max_orig;
 
     return queue_mem;

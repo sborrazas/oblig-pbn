@@ -31,12 +31,12 @@ void* create_shd_mem_with_flags(const char* pathname, int proj_id, int size, int
         log_warn("Error en el ftok, al generar la clave del archivo %s.", pathname);
     }
     else {
-        if ((shmid = shmget(shmkey, size, flags)) < 0) {
+        if ((shmid = shmget(shmkey, size, flags)) == -1) {
             log_warn("Error en el shmget, al obtener memoria de %d bytes.", size);
         }
         else {
             if ((shmaddr = shmat(shmid, NULL, 0)) == (void*) -1) {
-                log_warn("Error en el shmat, no pude acceder a la memoria.");
+                log_warn("Error en el shmat, no se pudo acceder a la memoria.");
                 shmaddr = NULL;
             }
             else if (shmid_out != NULL) {

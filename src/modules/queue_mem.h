@@ -10,25 +10,32 @@
 #define DATE_SIZE 23
 
 typedef struct message {
-  char      orig_name[NAME_SIZE];
-  int       counter;
-  short int priority;
-  char      date[DATE_SIZE];
+    char      orig_name[NAME_SIZE];
+    int       counter;
+    short int priority;
+    char      date[DATE_SIZE];
 } Message;
 
 typedef struct client {
-  char name[NAME_SIZE];
-  int  counter;
-  // Datos conexión
+    char name[NAME_SIZE];
+    int  counter;
+    // Datos conexión
 } Client;
 
+typedef struct circular_queue {
+    Message* messages;
+    int size;
+    int start_index;
+    int end_index;
+} Circular_Queue;
+
 typedef struct queue_mem {
-  Message* hp_messages;
-  Message* lp_messages;
-  int      num_origins;
-  Client*  origins;
-  int      num_processors;
-  Client*  processors;
+    Circular_Queue hp_messages;
+    Circular_Queue lp_messages;
+    int      num_origins;
+    Client*  origins;
+    int      num_processors;
+    Client*  processors;
 } Queue_Mem;
 
 Queue_Mem* create_queue_mem(int num_msg, int num_orig, int num_proc, int proj_id, int* shmid);

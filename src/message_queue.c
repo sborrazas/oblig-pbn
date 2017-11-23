@@ -6,8 +6,8 @@
 
 #define MAX_PROJ_ID 16777216
 #define DEFAULT_MAX_MSGS 4
-#define DEFAULT_MAX_ORIGS 2
-#define DEFAULT_MAX_PROCS 4
+#define DEFAULT_MAX_ORIGS 4
+#define DEFAULT_MAX_PROCS 2
 
 static struct option queue_options[] = {
   {"msgs",  required_argument,  0, 'm'},
