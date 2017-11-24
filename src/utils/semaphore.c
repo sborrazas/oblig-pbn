@@ -1,5 +1,7 @@
 #include "semaphore.h"
 
+int create_sem_with_flags(char *pathname, int proj_id, int size, int flags);
+
 int create_sem(char *pathname, int proj_id, int size) {
     return create_sem_with_flags(pathname, proj_id, size, IPC_CREAT | IPC_EXCL | S_IRWXU | S_IRWXG | S_IRWXO);
 }

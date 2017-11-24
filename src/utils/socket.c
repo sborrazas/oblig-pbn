@@ -13,7 +13,7 @@ int socket_create(int port) {
 
     bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
-    listen(listenfd, 10);
+    listen(listenfd, MAX_WAITING_CONNECTIONS);
 
     return listenfd;
 }
@@ -30,7 +30,7 @@ int socket_send(int connfd, char* buffer, int size) {
     // size = bytes faltantes por enviar
     // bytes_read = bytes enviados
     // buffer = posición en el array a partir de donde leo
-    int bytes_written;
+    ssize_t bytes_written;
 
     while (size > 0) {
         if ((bytes_written = write(connfd, buffer, size)) == -1) {
@@ -49,7 +49,7 @@ int socket_recv(int connfd, char* buffer, int size) {
     // size = bytes faltantes por recibir
     // bytes_read = bytes recibidos
     // buffer = posición en el array a partir de donde escribo
-    int bytes_read;
+    ssize_t bytes_read;
 
     while (size > 0) {
         if ((bytes_read = read(connfd, buffer, size)) == -1) {
