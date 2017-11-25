@@ -1,4 +1,5 @@
 #include <getopt.h>
+#include <signal.h>
 #include "utils/debug.h"
 #include "utils/random.h"
 #include "utils/term.h"
@@ -20,12 +21,16 @@ static struct option queue_options[] = {
 
 char* queue_shortopts = "m:o:p:";
 
-Queue_Mem* queue_mem;
-int origin_server;
-int processor_server;
+int shmid;
+int origin_server_pid;
+int processor_server_pid;
+
+void message_queue_exit();
+void handle_sigint();
+void handle_sigchld();
 
 int main(int argc, char* const argv[]) {
-    int shmid;
+    Queue_Mem* queue_mem;
     int proj_id;
     int max_msgs;
     int max_origs;
@@ -53,22 +58,62 @@ int main(int argc, char* const argv[]) {
 
     queue_mem = queue_mem_create(max_msgs, max_origs, max_procs, proj_id, &shmid);
 
-    origin_server = fork_server("build/modules/origin_server", proj_id);
-    processor_server = fork_server("build/modules/processor_server", proj_id);
+    if (atexit(message_queue_exit) != 0) {
+        log_err("No se pudo registrar message_queue_exit.");
+    }
+    if (signal(SIGINT, SIG_IGN) != SIG_IGN) {
+        signal(SIGINT, handle_sigint);
+    }
+    if (signal(SIGCHLD, SIG_IGN) != SIG_IGN) {
+        signal(SIGCHLD, handle_sigchld);
+    }
 
-    sleep(10000);
+    origin_server_pid = fork_server("build/modules/origin_server", proj_id);
+    processor_server_pid = fork_server("build/modules/processor_server", proj_id);
 
-    queue_mem_delete(shmid);
+    sleep(10);
 
     sleep(10000);
 
     return 0;
 }
 
-/*
-int callback() { // Se llama cuando un hijo se muere (SIGCHLD)
-  int pid_hijo = wait();
-
-  // Sacar hijo de mi lista de hijos
+void handle_sigint() {
+    printf("SIGINT lanzada a message_queue\n");
+    exit(EXIT_SUCCESS);
 }
-*/
+
+void handle_sigchld() {
+    int pid;
+    int status;
+
+    printf("SIGCHLD lanzada a message_queue\n");
+
+    while ((pid = waitpid(WAIT_ANY, &status, WNOHANG)) != 0) {
+        if (pid < 0) {
+            log_err("Ocurrió un error al obtener pid de hijo.");
+        }
+
+        if (pid == origin_server_pid) origin_server_pid = 0;
+        if (pid == processor_server_pid) processor_server_pid = 0;
+    }
+
+    exit(EXIT_SUCCESS);
+}
+
+void message_queue_exit() {
+    if (origin_server_pid != 0) {
+        printf("Terminando origin_server.. ");
+        kill(origin_server_pid, SIGTERM);
+        printf("Terminado.\n");
+    }
+    if (processor_server_pid != 0) {
+        printf("Terminando processor_server.. ");
+        kill(processor_server_pid, SIGTERM);
+        printf("Terminado.\n");
+    }
+
+    printf("Terminando message_queue.. ");
+    queue_mem_delete(shmid);
+    printf("Terminado.\n");
+}
