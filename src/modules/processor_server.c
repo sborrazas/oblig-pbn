@@ -13,7 +13,7 @@ int main(int argc, char* const argv[]) {
     int port;
     int proj_id;
     int listen_fd;
-    int conn_fd;
+    int connfd;
     short int is_active;
     int pid;
 
@@ -28,14 +28,14 @@ int main(int argc, char* const argv[]) {
     listen_fd = socket_create(port);
 
     while (is_active) {
-        if ((conn_fd = socket_accept(listen_fd)) == -1) {
+        if ((connfd = socket_accept(listen_fd)) == -1) {
             is_active = 0;
             log_warn("Error al aceptar una nueva conexión.");
         }
 
-        pid = fork_controller("origin_controller", proj_id, conn_fd);
+        pid = fork_controller("processor_controller", proj_id, connfd);
 
-        // TODO: Handle pid, agregar cliente
+        // TODO: Handle pid
     }
 
     return 0;

@@ -48,8 +48,8 @@ int main(int argc, char* const argv[]) {
 
     queue_mem = create_queue_mem(max_msgs, max_origs, max_procs, proj_id, &shmid);
 
-    origin_server = fork_server("origin_server", proj_id);
-    processor_server = fork_server("processor_server", proj_id);
+    origin_server = fork_server("build/modules/origin_server", proj_id, 8000);
+    processor_server = fork_server("build/modules/processor_server", proj_id);
 
     sleep(10000);
 

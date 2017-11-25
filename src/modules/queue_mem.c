@@ -1,6 +1,6 @@
 #include "queue_mem.h"
 
-int queue_mem_size(int  max_messages, int max_origins, int max_processors);
+int queue_mem_size(int max_messages, int max_origins, int max_processors);
 
 Queue_Mem* create_queue_mem(int max_msg, int max_orig, int max_proc, int proj_id, int* shmid) {
     int size;
