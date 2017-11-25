@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include "../utils/debug.h"
 
-int fork_server(const char* servername, int proj_id, int port);
+int fork_server(const char* servername, int proj_id);
 
 int fork_controller(const char* controllername, int proj_id, int conn_fd);
 

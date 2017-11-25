@@ -4,28 +4,27 @@
 #include "../utils/term.h"
 #include "queue_process.h"
 
-static struct option queue_options[] = {
-  {"port",  required_argument,  0, 'm'},
-  {"proj_id", required_argument,  0, 'o'}
+#define ORIGIN_SERVER_PORT 3000
+
+static struct option options[] = {
+  {"proj_id", required_argument,  0, 'p'}
 };
 
+char* shortopts = "p:";
+
 int main(int argc, char* const argv[]) {
-    int port;
     int proj_id;
     int listen_fd;
     int conn_fd;
     short int is_active;
     int pid;
 
-    if ((port = term_int_option(argc, argv, queue_options, 0)) == -1) {
-        log_err("Opción `--port` no presente. Finalizando..");
-    }
-    if ((proj_id = term_int_option(argc, argv, queue_options, 1)) == -1) {
+    if ((proj_id = term_int_option(argc, argv, options, shortopts, 0)) == -1) {
         log_err("Opción `--proj_id` no presente. Finalizando..");
     }
 
     is_active = 1;
-    listen_fd = socket_create(port);
+    listen_fd = socket_listen(ORIGIN_SERVER_PORT);
 
     while (is_active) {
         if ((conn_fd = socket_accept(listen_fd)) == -1) {
@@ -33,7 +32,9 @@ int main(int argc, char* const argv[]) {
             log_warn("Error al aceptar una nueva conexión.");
         }
 
-        pid = fork_controller("origin_controller", proj_id, conn_fd);
+        printf("Nueva conn_fd = %d", conn_fd);
+
+        pid = fork_controller("build/modules/origin_controller", proj_id, conn_fd);
 
         // TODO: Handle pid, agregar cliente
     }

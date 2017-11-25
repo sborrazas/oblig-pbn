@@ -4,6 +4,7 @@
 #include <getopt.h>
 #include "debug.h"
 
-int term_int_option(int argc, char* const argv[], const struct option* options, int index);
+int term_int_option(int argc, char* const argv[], const struct option* options, const char* shortopts, int index);
+char* term_str_option(int argc, char* const argv[], const struct option* options, const char* shortopts, int index);
 
 #endif
