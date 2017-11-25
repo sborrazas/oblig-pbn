@@ -3,6 +3,7 @@
 #include "utils/debug.h"
 #include "utils/random.h"
 #include "utils/term.h"
+#include "utils/sig.h"
 #include "modules/queue_mem.h"
 #include "modules/queue_process.h"
 
@@ -31,9 +32,8 @@ int shmid;
 int origin_server_pid;
 int processor_server_pid;
 
-void message_queue_exit();
-void handle_sigint();
 void handle_sigchld();
+void handle_exit();
 
 int main(int argc, char* const argv[]) {
     Queue_Mem* queue_mem;
@@ -65,14 +65,8 @@ int main(int argc, char* const argv[]) {
 
     queue_mem = queue_mem_create(max_msgs, max_origs, max_procs, proj_id, &shmid);
 
-    if (atexit(message_queue_exit) != 0) {
-        log_err("No se pudo registrar message_queue_exit.");
-    }
-    if (signal(SIGINT, SIG_IGN) != SIG_IGN) {
-        signal(SIGINT, handle_sigint);
-    }
-    if (signal(SIGCHLD, SIG_IGN) != SIG_IGN) {
-        signal(SIGCHLD, handle_sigchld);
+    if (signals_termination(handle_sigchld, handle_exit) != 0) {
+        log_err("No se pudo registrar señales correctamente en message_queue.");
     }
 
     origin_server_pid = fork_server("build/modules/origin_server", proj_id);
@@ -99,11 +93,6 @@ int main(int argc, char* const argv[]) {
     return 0;
 }
 
-void handle_sigint() {
-    printf("SIGINT lanzada a message_queue\n");
-    exit(EXIT_SUCCESS);
-}
-
 void handle_sigchld() {
     int pid;
     int status;
@@ -122,15 +111,15 @@ void handle_sigchld() {
     exit(EXIT_SUCCESS);
 }
 
-void message_queue_exit() {
+void handle_exit() {
     if (origin_server_pid != 0) {
         printf("Terminando origin_server.. ");
-        kill(origin_server_pid, SIGTERM);
+        kill(origin_server_pid, SIGINT);
         printf("Terminado.\n");
     }
     if (processor_server_pid != 0) {
         printf("Terminando processor_server.. ");
-        kill(processor_server_pid, SIGTERM);
+        kill(processor_server_pid, SIGINT);
         printf("Terminado.\n");
     }
 

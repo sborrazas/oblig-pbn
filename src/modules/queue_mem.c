@@ -37,6 +37,14 @@ Queue_Mem* queue_mem_connect(int proj_id) {
     return shared_mem_connect(KEY_PATHNAME, proj_id, MEM_SIZE);
 }
 
+void queue_mem_disconnect(Queue_Mem* mem) {
+    shared_mem_disconnect(mem);
+}
+
 void queue_mem_delete(int shmid) {
     shared_mem_delete(shmid);
+}
+
+void queue_mem_remove_origin(Queue_Mem* queue_mem, int origin_pid) {
+    // TODO
 }
