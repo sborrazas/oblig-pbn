@@ -1,28 +1,28 @@
 #include "shared_mem.h"
 
-void* create_shd_mem_with_flags(const char* pathname, int proj_id, int size, int flags, int* shmid);
+void* shared_mem_create_with_flags(const char* pathname, int proj_id, int size, int flags, int* shmid);
 
-void* create_shd_mem(const char* pathname, int proj_id, int size, int* shmid) {
-    return create_shd_mem_with_flags(pathname, proj_id, size, IPC_CREAT | IPC_EXCL | S_IRWXU | S_IRWXG | S_IRWXO, shmid);
+void* shared_mem_create(const char* pathname, int proj_id, int size, int* shmid) {
+    return shared_mem_create_with_flags(pathname, proj_id, size, IPC_CREAT | IPC_EXCL | S_IRWXU | S_IRWXG | S_IRWXO, shmid);
 }
 
-void* connect_shd_mem(const char* pathname, int proj_id, int size) {
-    return create_shd_mem_with_flags(pathname, proj_id, size, 0, NULL);
+void* shared_mem_connect(const char* pathname, int proj_id, int size) {
+    return shared_mem_create_with_flags(pathname, proj_id, size, S_IRUSR | S_IWUSR, NULL);
 }
 
-void disconnect_shd_mem(const void* shmaddr) {
+void shared_mem_disconnect(const void* shmaddr) {
     if (shmdt(shmaddr) != 0) {
         log_warn("Error al desconectar de memoria.");
     }
 }
 
-void delete_shd_mem(int shmid) {
+void shared_mem_delete(int shmid) {
     if (shmctl(shmid, IPC_RMID, NULL) == -1) {
         log_warn("Error al eliminar memoria.");
     }
 }
 
-void* create_shd_mem_with_flags(const char* pathname, int proj_id, int size, int flags, int* shmid_out) {
+void* shared_mem_create_with_flags(const char* pathname, int proj_id, int size, int flags, int* shmid_out) {
     key_t shmkey;
     int shmid;
     void* shmaddr = NULL;

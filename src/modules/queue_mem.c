@@ -1,15 +1,18 @@
 #include "queue_mem.h"
 
-int queue_mem_size(int max_messages, int max_origins, int max_processors);
+#define MAX_ORIGS 200
+#define MAX_PROCS 200
+#define MAX_MSGS 10000
 
-Queue_Mem* create_queue_mem(int max_msg, int max_orig, int max_proc, int proj_id, int* shmid) {
-    int size;
+#define MEM_SIZE 200 * sizeof(Queue_Mem) + \
+      sizeof(Message) * 2 * MAX_MSGS + \
+      sizeof(Client) * (MAX_ORIGS + MAX_PROCS)
+
+Queue_Mem* queue_mem_create(int max_msg, int max_orig, int max_proc, int proj_id, int* shmid) {
     Queue_Mem* queue_mem;
 
-    size = queue_mem_size(max_msg, max_orig, max_proc);
-
-    if ((queue_mem = (Queue_Mem*)create_shd_mem(KEY_PATHNAME, proj_id, size, shmid)) == NULL) {
-        log_err("No se pudo obtener la memoria compartida de tamaño %d bytes.", size);
+    if ((queue_mem = (Queue_Mem*)shared_mem_create(KEY_PATHNAME, proj_id, MEM_SIZE, shmid)) == NULL) {
+        log_err("No se pudo obtener la memoria compartida de tamaño %lu bytes.", MEM_SIZE);
     }
 
     queue_mem->num_origins = 0;
@@ -30,12 +33,10 @@ Queue_Mem* create_queue_mem(int max_msg, int max_orig, int max_proc, int proj_id
     return queue_mem;
 }
 
-void delete_queue_mem(int shmid) {
-    delete_shd_mem(shmid);
+Queue_Mem* queue_mem_connect(int proj_id) {
+    return shared_mem_connect(KEY_PATHNAME, proj_id, MEM_SIZE);
 }
 
-int queue_mem_size(int max_msg, int max_orig, int max_proc) {
-    return sizeof(Queue_Mem) +
-      sizeof(Message) * 2 * max_msg +
-      sizeof(Client) * (max_orig + max_proc);
+void queue_mem_delete(int shmid) {
+    shared_mem_delete(shmid);
 }

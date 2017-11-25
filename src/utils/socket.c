@@ -1,25 +1,52 @@
 #include "socket.h"
 
-int socket_create(int port) {
-    int listenfd;
+int socket_listen(uint16_t port) { // TODO: Manejar errores
+    int listen_fd;
     struct sockaddr_in serv_addr;
 
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    listen_fd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&serv_addr, '0', sizeof(serv_addr));
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(port);
 
-    bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    bind(listen_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
-    listen(listenfd, MAX_WAITING_CONNECTIONS);
+    listen(listen_fd, MAX_WAITING_CONNECTIONS);
 
-    return listenfd;
+    return listen_fd;
 }
 
 int socket_accept(int listenfd) {
     return accept(listenfd, (struct sockaddr*)NULL, NULL);
+}
+
+int socket_connect(const char* address, uint16_t port) {
+    int conn_fd;
+    struct sockaddr_in servername;
+
+    if ((conn_fd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+        log_warn("No se pudo crear el socket a %s:%d", address, port);
+        return -1;
+    }
+
+    servername.sin_family = AF_INET;
+    servername.sin_port = htons(port);
+
+    if (inet_aton(address, &servername.sin_addr) == 0) {
+        close(conn_fd);
+        log_warn("Address %s enviada es inválida", address);
+        return -1;
+    }
+
+    if (connect(conn_fd, (struct sockaddr*) &servername, sizeof(servername)) == -1) {
+        close(conn_fd);
+        log_warn("No se pudo conectar con %s:%d", address, port);
+        return -1;
+    }
+
+    return conn_fd;
 }
 
 void socket_close(int connfd) {

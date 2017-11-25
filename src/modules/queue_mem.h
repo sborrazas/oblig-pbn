@@ -38,8 +38,10 @@ typedef struct queue_mem {
     Client*  processors;
 } Queue_Mem;
 
-Queue_Mem* create_queue_mem(int num_msg, int num_orig, int num_proc, int proj_id, int* shmid);
+Queue_Mem* queue_mem_create(int num_msg, int num_orig, int num_proc, int proj_id, int* shmid);
 
-void delete_queue_mem(int shmid);
+Queue_Mem* queue_mem_connect(int proj_id);
+
+void queue_mem_delete(int shmid);
 
 #endif

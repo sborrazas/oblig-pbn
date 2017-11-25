@@ -5,12 +5,12 @@
 #include <sys/stat.h>
 #include "debug.h"
 
-void* create_shd_mem(const char* pathname, int proj_id, int size, int* shmaddr);
+void* shared_mem_create(const char* pathname, int proj_id, int size, int* shmaddr);
 
-void* connect_shd_mem(const char* pathname, int proj_id, int size);
+void* shared_mem_connect(const char* pathname, int proj_id, int size);
 
-void disconnect_shd_mem(const void* shmaddr);
+void shared_mem_disconnect(const void* shmaddr);
 
-void delete_shd_mem(int shmid);
+void shared_mem_delete(int shmid);
 
 #endif
