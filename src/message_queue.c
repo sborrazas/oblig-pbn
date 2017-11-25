@@ -19,7 +19,13 @@ static struct option queue_options[] = {
   {"procs", required_argument,  0, 'p'}
 };
 
-char* queue_shortopts = "m:o:p:";
+static char* queue_shortopts = "m:o:p:";
+
+static char* menu_options[] = {
+    "aaaaaaa",
+    "bbbbbbb",
+    "Salir"
+};
 
 int shmid;
 int origin_server_pid;
@@ -35,6 +41,7 @@ int main(int argc, char* const argv[]) {
     int max_msgs;
     int max_origs;
     int max_procs;
+    short int in_menu_loop;
 
     if ((max_msgs = term_int_option(argc, argv, queue_options, queue_shortopts, 0)) == -1) {
         log_warn("Opción `--msgs` no presente, utilizando el default de %d.", DEFAULT_MAX_MSGS);
@@ -71,9 +78,23 @@ int main(int argc, char* const argv[]) {
     origin_server_pid = fork_server("build/modules/origin_server", proj_id);
     processor_server_pid = fork_server("build/modules/processor_server", proj_id);
 
-    sleep(10);
+    in_menu_loop = 1;
 
-    sleep(10000);
+    while (in_menu_loop) {
+        switch (term_get_menu_option(menu_options, 3)) {
+        case 0:
+            log_warn("Entrada de programa terminada.");
+            in_menu_loop = 0;
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            in_menu_loop = 0;
+            break;
+        }
+    }
 
     return 0;
 }
