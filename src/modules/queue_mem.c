@@ -90,6 +90,32 @@ void queue_mem_remove_origin(Queue_Mem* queue_mem, int semid) {
     }
 }
 
+short int queue_mem_add_processor(Queue_Mem* queue_mem, int semid) {
+    short int result;
+
+    sem_p(PROCESSORS_SEMAPHORE, semid);
+    if ((result = queue_mem->num_processors < queue_mem->max_processors)) {
+        queue_mem->num_processors++;
+    }
+    sem_v(PROCESSORS_SEMAPHORE, semid);
+
+    return result;
+}
+
+void queue_mem_remove_processor(Queue_Mem* queue_mem, int semid) {
+    short int result;
+
+    sem_p(PROCESSORS_SEMAPHORE, semid);
+    if ((result = queue_mem->num_processors > 0)) {
+        queue_mem->num_processors--;
+    }
+    sem_v(PROCESSORS_SEMAPHORE, semid);
+
+    if (!result) {
+        log_warn("Se intentó remover un procesador cuando hay 0.");
+    }
+}
+
 void queue_mem_add_msg(Queue_Mem* mem, int semid, Message* msg) {
     sem_p(BUFFER_SEMAPHORE, semid);
 

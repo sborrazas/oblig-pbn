@@ -26,8 +26,8 @@ typedef struct syn_msg {
 /* } Err_Msg; */
 
 typedef struct ack_msg {
-    char name[NAME_SIZE];
-    char datetime[DATE_SIZE];
+    char name[NAME_SIZE + 1];
+    char datetime[DATE_SIZE + 1];
 } Ack_Msg;
 
 typedef struct Orig_msg {

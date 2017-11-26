@@ -47,7 +47,7 @@ int main(int argc, char* const argv[]) {
             log_err("Error al aceptar una nueva conexión.");
         }
 
-        printf("Nueva conn_fd = %d", conn_fd);
+        printf("Nueva conexión origin conn_fd = %d", conn_fd);
 
         fork_controller("build/modules/origin_controller", proj_id, conn_fd);
     }

@@ -53,4 +53,7 @@ void queue_mem_remove_origin(Queue_Mem* mem, int semid);
 void queue_mem_add_msg(Queue_Mem* mem, int semid, Message* msg);
 void queue_mem_remove_msg(Queue_Mem* mem, int semid, Message* msg);
 
+short int queue_mem_add_processor(Queue_Mem* queue_mem, int semid);
+void queue_mem_remove_processor(Queue_Mem* mem, int semid);
+
 #endif
