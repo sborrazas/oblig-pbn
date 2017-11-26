@@ -45,6 +45,10 @@ void queue_mem_delete(int shmid) {
     shared_mem_delete(shmid);
 }
 
+int queue_mem_add_origin(Queue_Mem* queue_mem, char* name) {
+    // TODO
+}
+
 void queue_mem_remove_origin(Queue_Mem* queue_mem, int origin_pid) {
     // TODO
 }

@@ -42,9 +42,9 @@ Queue_Mem* queue_mem_connect(int proj_id);
 void queue_mem_disconnect(Queue_Mem* mem);
 void queue_mem_delete(int shmid);
 
-int* queue_mem_get_origins_pids(Queue_Mem* mem, int* size);
+int queue_mem_add_origin(Queue_Mem* queue_mem, char* name);
 void queue_mem_remove_origin(Queue_Mem* mem, int pid);
-int* queue_mem_get_processors_pids(Queue_Mem* mem, int* size);
+
 void queue_mem_remove_processor(Queue_Mem* mem, int pid);
 
 #endif

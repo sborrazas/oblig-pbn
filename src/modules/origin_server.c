@@ -33,6 +33,10 @@ int main(int argc, char* const argv[]) {
         log_err("No se pudo registrar señales correctamente en origin_server.");
     }
 
+    if ((queue_mem = queue_mem_connect(proj_id)) == NULL) {
+        log_err("origin_server no pudo conectarse a shared_mem");
+    }
+
     is_active = 1;
     listen_fd = socket_listen(ORIGIN_SERVER_PORT);
 
@@ -67,7 +71,7 @@ void handle_sigchld() {
 
 void handle_exit() {
     printf("Terminando origin_server.. ");
-    // Kill remaining origins
+    // TODO: Kill remaining origins
     queue_mem_disconnect(queue_mem);
     printf("Terminado.\n");
 }
