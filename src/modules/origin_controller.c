@@ -11,6 +11,7 @@ static struct option options[] = {
 static char* shortopts = "p:c:";
 
 Queue_Mem* queue_mem;
+int semid;
 
 short int orig_connect(int conn_fd, char* name);
 short int orig_receive_msg(int conn_fd, int* counter, const char* name);
@@ -30,7 +31,7 @@ int main(int argc, char* const argv[]) {
 
     printf("Iniciando origin_controller con proj_id = %d, conn_fd = %d\n", proj_id, conn_fd);
 
-    if ((queue_mem = queue_mem_connect(proj_id)) == NULL) {
+    if ((queue_mem = queue_mem_connect(proj_id, &semid)) == NULL) {
         log_err("origin_controller no pudo conectarse a shared_mem");
     }
 
@@ -48,7 +49,7 @@ short int orig_connect(int conn_fd, char* name) {
 
     mq_receive_syn(conn_fd, &syn_msg);
 
-    if (queue_mem_add_origin(queue_mem) == -1) { // Too many origins
+    if (queue_mem_add_origin(queue_mem, semid) == -1) { // Too many origins
         mq_send_err(conn_fd, MQ_ERR_TOO_MANY_CLIENTS, name, syn_msg.datetime);
 
         return 0;
@@ -81,3 +82,5 @@ short int orig_receive_msg(int conn_fd, int* counter, const char* name) {
         return 0;
     }
 }
+
+// TODO: Signals handling

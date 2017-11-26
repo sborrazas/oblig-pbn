@@ -3,12 +3,19 @@
 
 #include "../utils/debug.h"
 #include "../utils/shared_mem.h"
+#include "../utils/sem.h"
 #include "mq_proto.h"
 
 #define KEY_PATHNAME "/etc/msg_queue.conf"
 #define MAX_MSGS 10000
 #define MEM_SIZE sizeof(Queue_Mem) + \
           sizeof(Message) * 2 * MAX_MSGS
+#define SEMAPHORES_COUNT 4
+
+#define BUFFER_SEMAPHORE 0
+#define FULL_SEMAPHORE 1
+#define ORIGINS_SEMAPHORE 2
+#define PROCESSORS_SEMAPHORE 3
 
 typedef struct message {
     char      orig_name[NAME_SIZE + 1];
@@ -33,10 +40,12 @@ typedef struct queue_mem {
     int            max_processors;
 } Queue_Mem;
 
-Queue_Mem* queue_mem_create(int num_msg, int num_orig, int num_proc, int proj_id, int* shmid);
-Queue_Mem* queue_mem_connect(int proj_id);
+Queue_Mem* queue_mem_create(int num_msg, int num_orig,
+                            int num_proc, int proj_id,
+                            int* shmid, int* semid);
+Queue_Mem* queue_mem_connect(int proj_id, int* semid);
 void queue_mem_disconnect(Queue_Mem* mem);
-void queue_mem_delete(int shmid);
+void queue_mem_delete(int shmid, int semid);
 
 short int queue_mem_add_origin(Queue_Mem* queue_mem);
 void queue_mem_remove_origin(Queue_Mem* mem);

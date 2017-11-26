@@ -15,6 +15,7 @@ static struct option options[] = {
 static char* shortopts = "p:";
 
 Queue_Mem* queue_mem;
+int semid;
 
 void handle_sigchld();
 void handle_exit();
@@ -33,7 +34,7 @@ int main(int argc, char* const argv[]) {
         log_err("No se pudo registrar señales correctamente en origin_server.");
     }
 
-    if ((queue_mem = queue_mem_connect(proj_id)) == NULL) {
+    if ((queue_mem = queue_mem_connect(proj_id, &semid)) == NULL) {
         log_err("origin_server no pudo conectarse a shared_mem");
     }
 
@@ -65,7 +66,7 @@ void handle_sigchld() {
             log_err("Ocurrió un error al obtener pid de hijo.");
         }
 
-        queue_mem_remove_origin(queue_mem);
+        queue_mem_remove_origin(queue_mem, semid);
     }
 }
 

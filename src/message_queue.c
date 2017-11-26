@@ -29,6 +29,7 @@ static char* menu_options[] = {
 };
 
 int shmid;
+int semid;
 int origin_server_pid;
 int processor_server_pid;
 
@@ -63,7 +64,7 @@ int main(int argc, char* const argv[]) {
     printf("max_procs = %d\n", max_procs);
     printf("proj_id = %d\n", proj_id);
 
-    queue_mem = queue_mem_create(max_msgs, max_origs, max_procs, proj_id, &shmid);
+    queue_mem = queue_mem_create(max_msgs, max_origs, max_procs, proj_id, &shmid, &semid);
 
     if (signals_termination(handle_sigchld, handle_exit) != 0) {
         log_err("No se pudo registrar señales correctamente en message_queue.");
@@ -124,6 +125,6 @@ void handle_exit() {
     }
 
     printf("Terminando message_queue.. ");
-    queue_mem_delete(shmid);
+    queue_mem_delete(shmid, semid);
     printf("Terminado.\n");
 }

@@ -1,16 +1,16 @@
-#include "semaphore.h"
+#include "sem.h"
 
-int create_sem_with_flags(char *pathname, int proj_id, int size, int flags);
+int sem_create_with_flags(char *pathname, int proj_id, int count, int flags, short int initialize);
 
-int create_sem(char *pathname, int proj_id, int size) {
-    return create_sem_with_flags(pathname, proj_id, size, IPC_CREAT | IPC_EXCL | S_IRWXU | S_IRWXG | S_IRWXO);
+int sem_create(char *pathname, int proj_id, int count) {
+    return sem_create_with_flags(pathname, proj_id, count, IPC_CREAT | IPC_EXCL | S_IRWXU | S_IRWXG | S_IRWXO, 1);
 }
 
-int use_sem(char *pathname, int proj_id, int size) {
-    return create_sem_with_flags(pathname, proj_id, size, 0);
+int sem_connect(char *pathname, int proj_id, int count) {
+    return sem_create_with_flags(pathname, proj_id, count, 0, 0);
 }
 
-int create_sem_with_flags(char *pathname, int proj_id, int size, int flags) {
+int sem_create_with_flags(char *pathname, int proj_id, int count, int flags, short int initialize) {
     key_t semkey;
     int semid = -1;
     union semum semset;
@@ -19,12 +19,12 @@ int create_sem_with_flags(char *pathname, int proj_id, int size, int flags) {
         log_warn("Error en el ftok, al generar la clave del archivo %s.", pathname);
     }
     else {
-        if ((semid = semget(semkey, size, flags)) == -1) {
-            log_warn("Error en el semget, al obtener %d semáforo(s).", size);
+        if ((semid = semget(semkey, count, flags)) == -1) {
+            log_warn("Error en el semget, al obtener %d semáforo(s).", count);
         }
-        else {
+        else if (initialize) {
             semset.val = SEM_INIT;
-            if (semctl(semid, 0, SETALL, &semset) == -1) {
+            if (semctl(semid, 0, SETALL, &semset) == -1) { // Set all semaphores to SET_INIT (0)
                 log_warn("Error en el semctl, no se pudo inicializar el semáforo.");
                 semid = -1;
             }
@@ -34,7 +34,8 @@ int create_sem_with_flags(char *pathname, int proj_id, int size, int flags) {
     return semid;
 }
 
-void delete_sem(int semid) {
+void sem_delete(int semid) {
+    printf("SEM DELTE\n");
     if (semctl(semid, 0, IPC_RMID) == -1){
         log_warn("Error en el semctl, no se pudo eliminar el semáforo.");
     }
