@@ -25,15 +25,15 @@ typedef struct syn_msg {
 /*     char datetime[DATE_SIZE]; */
 /* } Err_Msg; */
 
-/* typedef struct ack_msg { */
-/*     char name[NAME_SIZE]; */
-/*     char datetime[DATE_SIZE]; */
-/* } Ack_Msg; */
+typedef struct ack_msg {
+    char name[NAME_SIZE];
+    char datetime[DATE_SIZE];
+} Ack_Msg;
 
 typedef struct Orig_msg {
     char name[NAME_SIZE + 1];
     int counter;
-    short int priority;
+    short int high_priority;
     char datetime[DATE_SIZE + 1];
 } Orig_Msg;
 
@@ -41,5 +41,9 @@ void mq_receive_syn(int conn_fd, Syn_Msg* syn_msg);
 short int mq_receive_orig_msg(int conn_fd, Orig_Msg* orig_msg);
 void mq_send_err(int conn_fd, int err_num, const char* name, const char* datetime);
 void mq_send_orig_ack(int conn_fd, const char* name, const char* datetime);
+
+void mq_send_syn(int conn_fd, const char* name);
+void mq_receive_ack(int conn_fd, Ack_Msg* ack_msg);
+void mq_send_msg(int conn_fd, const char* name, int counter, short int high_priority);
 
 #endif

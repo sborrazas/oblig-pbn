@@ -20,15 +20,15 @@
 typedef struct message {
     char      orig_name[NAME_SIZE + 1];
     int       counter;
-    short int priority;
-    char      date[DATE_SIZE + 1];
+    short int high_priority;
+    char      datetime[DATE_SIZE + 1];
 } Message;
 
 typedef struct circular_queue {
-    Message* messages;
-    int      size;
+    Message  messages[MAX_MSGS];
     int      start_index;
     int      end_index;
+    int      count;
 } Circular_Queue;
 
 typedef struct queue_mem {
@@ -38,6 +38,7 @@ typedef struct queue_mem {
     int            max_origins;
     int            num_processors;
     int            max_processors;
+    int            max_messages;
 } Queue_Mem;
 
 Queue_Mem* queue_mem_create(int num_msg, int num_orig,
@@ -47,8 +48,8 @@ Queue_Mem* queue_mem_connect(int proj_id, int* semid);
 void queue_mem_disconnect(Queue_Mem* mem);
 void queue_mem_delete(int shmid, int semid);
 
-short int queue_mem_add_origin(Queue_Mem* queue_mem);
-void queue_mem_remove_origin(Queue_Mem* mem);
-short int queue_mem_add_msg(Queue_Mem* mem, const char* orig_name, short int priority, int counter, const char* datetime);
+short int queue_mem_add_origin(Queue_Mem* queue_mem, int semid);
+void queue_mem_remove_origin(Queue_Mem* mem, int semid);
+short int queue_mem_add_msg(Queue_Mem* mem, int semid, Message msg);
 
 #endif

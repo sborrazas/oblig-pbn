@@ -38,7 +38,7 @@ int main(int argc, char* const argv[]) {
     if (orig_connect(conn_fd, name)) {
         counter = 0;
 
-        while (orig_receive_msg(conn_fd, &counter, name)) ;
+        while (orig_receive_msg(conn_fd, &counter, name) != -1) ;
     }
 
     return 0;
@@ -64,13 +64,19 @@ short int orig_connect(int conn_fd, char* name) {
 
 short int orig_receive_msg(int conn_fd, int* counter, const char* name) {
     Orig_Msg orig_msg;
+    Message msg;
 
     if (!mq_receive_orig_msg(conn_fd, &orig_msg)) { // FIN
         return -1;
     }
 
     if (orig_msg.counter > *counter) {
-        queue_mem_add_msg(queue_mem, name, orig_msg.priority, orig_msg.counter, orig_msg.datetime);
+        strcpy(msg.orig_name, name);
+        msg.counter = orig_msg.counter;
+        msg.high_priority = orig_msg.high_priority;
+        strcpy(msg.datetime, orig_msg.datetime);
+
+        queue_mem_add_msg(queue_mem, semid, msg);
         mq_send_orig_ack(conn_fd, name, orig_msg.datetime);
         *counter = orig_msg.counter;
 

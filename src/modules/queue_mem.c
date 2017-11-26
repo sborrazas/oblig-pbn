@@ -21,13 +21,12 @@ Queue_Mem* queue_mem_create(int max_msg, int max_orig, int max_proc, int proj_id
     queue_mem->max_origins = max_orig;
     queue_mem->num_processors = 0;
     queue_mem->max_processors = max_proc;
+    queue_mem->max_messages = max_msg;
 
-    queue_mem->hp_messages.messages = (Message*)sizeof(Queue_Mem);
-    queue_mem->hp_messages.size = max_msg;
+    queue_mem->hp_messages.count = 0;
     queue_mem->hp_messages.start_index = 0;
     queue_mem->hp_messages.end_index = 0;
-    queue_mem->lp_messages.messages = queue_mem->hp_messages.messages + sizeof(Message) * max_msg;
-    queue_mem->lp_messages.size = max_msg;
+    queue_mem->lp_messages.count = 0;
     queue_mem->lp_messages.start_index = 0;
     queue_mem->lp_messages.end_index = 0;
 
@@ -58,16 +57,75 @@ void queue_mem_disconnect(Queue_Mem* mem) {
 
 void queue_mem_delete(int shmid, int semid) {
     shared_mem_delete(shmid);
+    sem_delete(semid);
 }
 
-short int queue_mem_add_origin(Queue_Mem* queue_mem) {
-    // TODO
+/******************************************************************************/
+/* MEM OPERATIONS *************************************************************/
+/******************************************************************************/
+
+short int queue_mem_add_origin(Queue_Mem* queue_mem, int semid) {
+    short int result;
+
+    sem_p(ORIGINS_SEMAPHORE, semid);
+    if ((result = queue_mem->num_origins < queue_mem->max_origins)) {
+        queue_mem->num_origins++;
+    }
+    sem_v(ORIGINS_SEMAPHORE, semid);
+
+    return result;
 }
 
-void queue_mem_remove_origin(Queue_Mem* queue_mem) {
-    // TODO
+void queue_mem_remove_origin(Queue_Mem* queue_mem, int semid) {
+    short int result;
+
+    sem_p(ORIGINS_SEMAPHORE, semid);
+    if ((result = queue_mem->num_origins > 0)) {
+        queue_mem->num_origins--;
+    }
+    sem_v(ORIGINS_SEMAPHORE, semid);
+
+    if (!result) {
+        log_warn("Se intentó remover un origen cuando hay 0.");
+    }
 }
 
-short int queue_mem_add_msg(Queue_Mem* mem, const char* orig_name, short int priority, int counter, const char* datetime) {
-    return 1;
+short int queue_mem_add_msg(Queue_Mem* mem, int semid, Message msg) {
+    short int result;
+
+    sem_p(BUFFER_SEMAPHORE, semid);
+
+    if (is_queue_full(mem)) {
+        if (msg.high_priority) {
+            mem->hp_messages.messages[mem->hp_messages.end_index] = msg;
+            mem->hp_messages.end_index++;
+            if (mem->lp_messages.count > 0) {
+                mem->lp_messages.start_index++;
+            }
+        }
+        else {
+            mem->lp_messages.messages[mem->lp_messages.end_index] = msg;
+            mem->lp_messages.end_index++;
+            mem->lp_messages.start_index++;
+        }
+        sem_v(BUFFER_SEMAPHORE, semid);
+    }
+    else {
+        if (msg.high_priority) {
+            mem->hp_messages.messages[mem->hp_messages.end_index] = msg;
+            mem->hp_messages.end_index++;
+        }
+        else {
+            mem->lp_messages.messages[mem->lp_messages.end_index] = msg;
+            mem->lp_messages.end_index++;
+        }
+        sem_v(BUFFER_SEMAPHORE, semid);
+        sem_v(FULL_SEMAPHORE, semid);
+    }
+
+    return result;
+}
+
+short int is_queue_full(Queue_Mem* mem) {
+    return (mem->hp_messages.count + mem->lp_messages.count) == mem->max_messages;
 }
