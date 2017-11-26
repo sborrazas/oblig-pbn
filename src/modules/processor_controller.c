@@ -38,6 +38,8 @@ int main(int argc, char* const argv[]) {
         while (proc_receive_msg(conn_fd, name) != -1) ;
     }
 
+    socket_close(conn_fd);
+
     return 0;
 }
 

@@ -71,5 +71,7 @@ int main(int argc, char* const argv[]) {
     // Recibir ACK
     mq_receive_ack(conn_fd, &ack_msg);
 
+    socket_close(conn_fd);
+
     return 0;
 }

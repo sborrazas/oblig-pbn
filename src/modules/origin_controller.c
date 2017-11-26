@@ -41,6 +41,8 @@ int main(int argc, char* const argv[]) {
         while (orig_receive_msg(conn_fd, &counter, name) != -1) ;
     }
 
+    socket_close(conn_fd);
+
     return 0;
 }
 
