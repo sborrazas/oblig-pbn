@@ -1,13 +1,5 @@
 #include "queue_mem.h"
 
-#define MAX_ORIGS 200
-#define MAX_PROCS 200
-#define MAX_MSGS 10000
-
-#define MEM_SIZE 200 * sizeof(Queue_Mem) + \
-      sizeof(Message) * 2 * MAX_MSGS + \
-      sizeof(Client) * (MAX_ORIGS + MAX_PROCS)
-
 Queue_Mem* queue_mem_create(int max_msg, int max_orig, int max_proc, int proj_id, int* shmid) {
     Queue_Mem* queue_mem;
 
@@ -16,7 +8,9 @@ Queue_Mem* queue_mem_create(int max_msg, int max_orig, int max_proc, int proj_id
     }
 
     queue_mem->num_origins = 0;
+    queue_mem->max_origins = max_orig;
     queue_mem->num_processors = 0;
+    queue_mem->max_processors = max_proc;
 
     queue_mem->hp_messages.messages = (Message*)sizeof(Queue_Mem);
     queue_mem->hp_messages.size = max_msg;
@@ -26,9 +20,6 @@ Queue_Mem* queue_mem_create(int max_msg, int max_orig, int max_proc, int proj_id
     queue_mem->lp_messages.size = max_msg;
     queue_mem->lp_messages.start_index = 0;
     queue_mem->lp_messages.end_index = 0;
-
-    queue_mem->origins = (Client*)queue_mem->hp_messages.messages + sizeof(Message) * max_msg;
-    queue_mem->processors = queue_mem->origins + sizeof(Client) * max_orig;
 
     return queue_mem;
 }
@@ -45,10 +36,14 @@ void queue_mem_delete(int shmid) {
     shared_mem_delete(shmid);
 }
 
-int queue_mem_add_origin(Queue_Mem* queue_mem, char* name) {
+short int queue_mem_add_origin(Queue_Mem* queue_mem) {
     // TODO
 }
 
-void queue_mem_remove_origin(Queue_Mem* queue_mem, int origin_pid) {
+void queue_mem_remove_origin(Queue_Mem* queue_mem) {
     // TODO
+}
+
+short int queue_mem_add_msg(Queue_Mem* mem, const char* orig_name, short int priority, int counter, const char* datetime) {
+    return 1;
 }

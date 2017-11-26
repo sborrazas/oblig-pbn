@@ -65,7 +65,7 @@ void handle_sigchld() {
             log_err("Ocurrió un error al obtener pid de hijo.");
         }
 
-        queue_mem_remove_origin(queue_mem, pid);
+        queue_mem_remove_origin(queue_mem);
     }
 }
 

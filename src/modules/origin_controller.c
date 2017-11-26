@@ -12,14 +12,14 @@ static char* shortopts = "p:c:";
 
 Queue_Mem* queue_mem;
 
-int orig_connect(int conn_fd, char* name);
-int orig_receive_msg(int conn_fd, char* name);
+short int orig_connect(int conn_fd, char* name);
+short int orig_receive_msg(int conn_fd, int* counter, const char* name);
 
 int main(int argc, char* const argv[]) {
     int proj_id;
     int conn_fd;
-    char name[NAME_SIZE];
-    short int is_active;
+    char name[NAME_SIZE + 1];
+    int counter;
 
     if ((proj_id = term_int_option(argc, argv, options, shortopts, 0)) == -1) {
         log_err("Opción `--proj_id` no presente. Finalizando..");
@@ -34,53 +34,50 @@ int main(int argc, char* const argv[]) {
         log_err("origin_controller no pudo conectarse a shared_mem");
     }
 
-    is_active = orig_connect(conn_fd, name);
+    if (orig_connect(conn_fd, name)) {
+        counter = 0;
 
-    while (is_active) {
-        is_active = orig_receive_msg(conn_fd, name) == 0;
+        while (orig_receive_msg(conn_fd, &counter, name)) ;
     }
 
     return 0;
 }
 
-int orig_connect(int conn_fd, char* name) {
-    int ret_code;
+short int orig_connect(int conn_fd, char* name) {
     Syn_Msg syn_msg;
-    Err_Msg err_msg;
-    Ack_Msg ack_msg;
 
-    do {
-        if ((ret_code = mq_receive_syn(conn_fd, &syn_msg)) == RET_CONN_ERR) {
-            log_err("Ocurrió un error en la conexión del origen.");
-        }
-        else if (ret_code == RET_INVALID_FORMAT) {
-            err_msg.err_num = MQ_ERR_INVALID_MSG;
-            err_msg.name = syn_msg.name;
-            err_msg.time = syn_msg.time;
-            mq_send_err(conn_fd, err_msg);
-        }
-    } while (ret_code != RET_SUCCESS);
+    mq_receive_syn(conn_fd, &syn_msg);
 
-    ack_msg.name = syn_msg.name;
-    ack_msg.time = syn_msg.time;
-    mq_send_ack(conn_fd, ack_msg);
-
-    name = syn_msg.name; // TODO: Local memory?
-
-    if (queue_mem_add_origin(queue_mem, name) == -1) { // Too many origins
-        err_msg.err_num = MQ_ERR_TOO_MANY_CLIENTS;
-        err_msg.name = syn_msg.name;
-        err_msg.time = syn_msg.time;
-        mq_send_err(conn_fd, err_msg);
+    if (queue_mem_add_origin(queue_mem) == -1) { // Too many origins
+        mq_send_err(conn_fd, MQ_ERR_TOO_MANY_CLIENTS, name, syn_msg.datetime);
 
         return 0;
     }
     else {
+        strcpy(name, syn_msg.name);
+        mq_send_orig_ack(conn_fd, syn_msg.name, syn_msg.datetime);
+
         return 1;
     }
 }
 
-int orig_receive_msg(int conn_fd, char* name) {
-    // TODO: msg = mq_receive_msg(conn_fd, &counter);
-    return 0;
+short int orig_receive_msg(int conn_fd, int* counter, const char* name) {
+    Orig_Msg orig_msg;
+
+    if (!mq_receive_orig_msg(conn_fd, &orig_msg)) { // FIN
+        return -1;
+    }
+
+    if (orig_msg.counter > *counter) {
+        queue_mem_add_msg(queue_mem, name, orig_msg.priority, orig_msg.counter, orig_msg.datetime);
+        mq_send_orig_ack(conn_fd, name, orig_msg.datetime);
+        *counter = orig_msg.counter;
+
+        return 1;
+    }
+    else {
+        mq_send_err(conn_fd, MQ_ERR_INVALID_COUNTER, name, orig_msg.datetime);
+
+        return 0;
+    }
 }
