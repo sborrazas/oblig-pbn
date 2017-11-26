@@ -32,7 +32,34 @@ void mq_receive_syn(int conn_fd, Syn_Msg* syn_msg) {
     }
 }
 
-short int mq_receive_orig_msg(int conn_fd, Orig_Msg* orig_msg) {
+short int mq_receive_rdy(int conn_fd) {
+    char buffer[33];
+    char name[NAME_SIZE + 1];
+    char datetime[DATE_SIZE + 1];
+
+    while (1) {
+        if (socket_recv(conn_fd, buffer, 32) == -1) {
+            log_err("Ocurrió un error en la conexión del origen al obtener SYN.");
+        }
+        buffer[32] = '\0';
+
+        if (sscanf(buffer, "RDY" SPC "%8"CHR SPC "%19"CHR, name, datetime) == 2) {
+            mq_send_ack(conn_fd, name, datetime);
+
+            return 1;
+        }
+        else if (sscanf(buffer, "FIN" SPC "%8"CHR SPC "%19"CHR, name, datetime) == 2) {
+            mq_send_ack(conn_fd, name, datetime);
+
+            return 0;
+        }
+        else {
+            mq_send_err(conn_fd, MQ_ERR_INVALID_MSG, DEFAULT_NAME, DEFAULT_DATETIME);
+        }
+    }
+}
+
+short int mq_receive_msg(int conn_fd, Msg_Msg* msg_msg) {
     char buffer[39];
     char name[9];
     char datetime[20];
@@ -53,10 +80,10 @@ short int mq_receive_orig_msg(int conn_fd, Orig_Msg* orig_msg) {
             }
 
             if (sscanf(buffer, "%8"CHR SPC "%19"CHR, name, datetime) == 2) {
-                mq_send_orig_ack(conn_fd, name, datetime);
+                mq_send_ack(conn_fd, name, datetime);
             }
             else { // Terminar conexión de todas formas
-                mq_send_orig_ack(conn_fd, DEFAULT_NAME, DEFAULT_DATETIME);
+                mq_send_ack(conn_fd, DEFAULT_NAME, DEFAULT_DATETIME);
             }
 
             return 0;
@@ -68,23 +95,23 @@ short int mq_receive_orig_msg(int conn_fd, Orig_Msg* orig_msg) {
             buffer[38] = '\0';
 
             if (sscanf(buffer, "%8"CHR SPC "%04d" SPC "ALTA" SPC "%19"CHR, name, &counter, datetime) == 3) {
-                strncpy(orig_msg->name, name, NAME_SIZE);
-                orig_msg->name[NAME_SIZE] = '\0';
-                strncpy(orig_msg->datetime, datetime, DATE_SIZE);
-                orig_msg->datetime[DATE_SIZE] = '\0';
-                orig_msg->counter = counter;
-                orig_msg->high_priority = 1;
+                strncpy(msg_msg->name, name, NAME_SIZE);
+                msg_msg->name[NAME_SIZE] = '\0';
+                strncpy(msg_msg->datetime, datetime, DATE_SIZE);
+                msg_msg->datetime[DATE_SIZE] = '\0';
+                msg_msg->counter = counter;
+                msg_msg->high_priority = 1;
                 is_valid = 1;
 
                 printf("ALTA ARRIVED: %s %d %s\n", name, counter, datetime);
             }
             else if (sscanf(buffer, "%8"CHR SPC "%04d" SPC "BAJA" SPC "%19"CHR, name, &counter, datetime) == 3) {
-                strncpy(orig_msg->name, name, NAME_SIZE);
-                orig_msg->name[NAME_SIZE] = '\0';
-                strncpy(orig_msg->datetime, datetime, DATE_SIZE);
-                orig_msg->datetime[DATE_SIZE] = '\0';
-                orig_msg->counter = counter;
-                orig_msg->high_priority = 0;
+                strncpy(msg_msg->name, name, NAME_SIZE);
+                msg_msg->name[NAME_SIZE] = '\0';
+                strncpy(msg_msg->datetime, datetime, DATE_SIZE);
+                msg_msg->datetime[DATE_SIZE] = '\0';
+                msg_msg->counter = counter;
+                msg_msg->high_priority = 0;
                 is_valid = 1;
 
                 printf("BAJA ARRIVED: %s %d %s\n", name, counter, datetime);
@@ -111,7 +138,7 @@ void mq_send_err(int conn_fd, int err_num, const char* name, const char* datetim
     }
 }
 
-void mq_send_orig_ack(int conn_fd, const char* name, const char* datetime) {
+void mq_send_ack(int conn_fd, const char* name, const char* datetime) {
     char buffer[33];
 
     snprintf(buffer, 33, "ACK %8s %19s", name, datetime);
@@ -131,6 +158,19 @@ void mq_send_syn(int conn_fd, const char* name) {
 
     if (socket_send(conn_fd, buffer, 32) == -1) {
         log_err("Ocurrió un error en la conexión del origen al enviar SYN.");
+    }
+}
+
+void mq_send_rdy(int conn_fd, const char* name) {
+    char datetime[20];
+    char buffer[33];
+
+    get_current_date(datetime);
+
+    snprintf(buffer, 33, "RDY %8s %19s", name, datetime);
+
+    if (socket_send(conn_fd, buffer, 32) == -1) {
+        log_err("Ocurrió un error en la conexión del origen al enviar RDY.");
     }
 }
 
@@ -179,7 +219,7 @@ void mq_send_fin(int conn_fd, const char* name) {
     snprintf(buffer, 33, "FIN %8s %19s", name, datetime);
 
     if (socket_send(conn_fd, buffer, 32) == -1) {
-        log_err("Ocurrió un error en la conexión del origen al enviar ACK.");
+        log_err("Ocurrió un error en la conexión del origen al enviar FIN.");
     }
 }
 

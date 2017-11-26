@@ -19,31 +19,30 @@ typedef struct syn_msg {
     char datetime[DATE_SIZE + 1];
 } Syn_Msg;
 
-/* typedef struct err_msg { */
-/*     int err_num; */
-/*     char name[NAME_SIZE]; */
-/*     char datetime[DATE_SIZE]; */
-/* } Err_Msg; */
-
 typedef struct ack_msg {
     char name[NAME_SIZE + 1];
     char datetime[DATE_SIZE + 1];
 } Ack_Msg;
 
-typedef struct Orig_msg {
+typedef struct msg_msg {
     char name[NAME_SIZE + 1];
     int counter;
     short int high_priority;
     char datetime[DATE_SIZE + 1];
-} Orig_Msg;
+} Msg_Msg;
 
 void mq_receive_syn(int conn_fd, Syn_Msg* syn_msg);
-short int mq_receive_orig_msg(int conn_fd, Orig_Msg* orig_msg);
+short int mq_receive_msg(int conn_fd, Msg_Msg* msg_msg);
 void mq_send_err(int conn_fd, int err_num, const char* name, const char* datetime);
-void mq_send_orig_ack(int conn_fd, const char* name, const char* datetime);
+void mq_send_ack(int conn_fd, const char* name, const char* datetime);
 
 void mq_send_syn(int conn_fd, const char* name);
 void mq_receive_ack(int conn_fd, Ack_Msg* ack_msg);
 void mq_send_msg(int conn_fd, const char* name, int counter, short int high_priority);
+
+short int mq_receive_rdy(int conn_fd);
+void mq_send_rdy(int conn_fd, const char* name);
+
+void mq_send_fin(int conn_fd, const char* name);
 
 #endif

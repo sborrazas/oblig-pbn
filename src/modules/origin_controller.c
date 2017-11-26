@@ -56,34 +56,34 @@ short int orig_connect(int conn_fd, char* name) {
     }
     else {
         strcpy(name, syn_msg.name);
-        mq_send_orig_ack(conn_fd, syn_msg.name, syn_msg.datetime);
+        mq_send_ack(conn_fd, syn_msg.name, syn_msg.datetime);
 
         return 1;
     }
 }
 
 short int orig_receive_msg(int conn_fd, int* counter, const char* name) {
-    Orig_Msg orig_msg;
+    Msg_Msg msg_msg;
     Message msg;
 
-    if (!mq_receive_orig_msg(conn_fd, &orig_msg)) { // FIN
+    if (!mq_receive_msg(conn_fd, &msg_msg)) { // FIN
         return -1;
     }
 
-    if (orig_msg.counter > *counter) {
+    if (msg_msg.counter > *counter) {
         strcpy(msg.orig_name, name);
-        msg.counter = orig_msg.counter;
-        msg.high_priority = orig_msg.high_priority;
-        strcpy(msg.datetime, orig_msg.datetime);
+        msg.counter = msg_msg.counter;
+        msg.high_priority = msg_msg.high_priority;
+        strcpy(msg.datetime, msg_msg.datetime);
 
         queue_mem_add_msg(queue_mem, semid, &msg);
-        mq_send_orig_ack(conn_fd, name, orig_msg.datetime);
-        *counter = orig_msg.counter;
+        mq_send_ack(conn_fd, name, msg_msg.datetime);
+        *counter = msg_msg.counter;
 
         return 1;
     }
     else {
-        mq_send_err(conn_fd, MQ_ERR_INVALID_COUNTER, name, orig_msg.datetime);
+        mq_send_err(conn_fd, MQ_ERR_INVALID_COUNTER, name, msg_msg.datetime);
 
         return 0;
     }
