@@ -90,40 +90,59 @@ void queue_mem_remove_origin(Queue_Mem* queue_mem, int semid) {
     }
 }
 
-short int queue_mem_add_msg(Queue_Mem* mem, int semid, Message msg) {
-    short int result;
-
+void queue_mem_add_msg(Queue_Mem* mem, int semid, Message* msg) {
     sem_p(BUFFER_SEMAPHORE, semid);
 
     if (is_queue_full(mem)) {
-        if (msg.high_priority) {
-            mem->hp_messages.messages[mem->hp_messages.end_index] = msg;
+        if (msg->high_priority) {
+            mem->hp_messages.messages[mem->hp_messages.end_index] = *msg;
             mem->hp_messages.end_index++;
             if (mem->lp_messages.count > 0) {
                 mem->lp_messages.start_index++;
+                mem->hp_messages.count++;
+                mem->lp_messages.count--;
             }
         }
         else {
-            mem->lp_messages.messages[mem->lp_messages.end_index] = msg;
+            mem->lp_messages.messages[mem->lp_messages.end_index] = *msg;
             mem->lp_messages.end_index++;
             mem->lp_messages.start_index++;
         }
         sem_v(BUFFER_SEMAPHORE, semid);
     }
     else {
-        if (msg.high_priority) {
-            mem->hp_messages.messages[mem->hp_messages.end_index] = msg;
+        if (msg->high_priority) {
+            mem->hp_messages.messages[mem->hp_messages.end_index] = *msg;
             mem->hp_messages.end_index++;
+            mem->hp_messages.count++;
         }
         else {
-            mem->lp_messages.messages[mem->lp_messages.end_index] = msg;
+            mem->lp_messages.messages[mem->lp_messages.end_index] = *msg;
             mem->lp_messages.end_index++;
+            mem->lp_messages.count++;
         }
+
         sem_v(BUFFER_SEMAPHORE, semid);
         sem_v(FULL_SEMAPHORE, semid);
     }
+}
 
-    return result;
+void queue_mem_remove_msg(Queue_Mem* mem, int semid, Message* msg) {
+    sem_p(FULL_SEMAPHORE, semid);
+    sem_p(BUFFER_SEMAPHORE, semid);
+
+    if (mem->hp_messages.count > 0) {
+        *msg = mem->hp_messages.messages[mem->hp_messages.start_index];
+        mem->hp_messages.start_index++;
+        mem->hp_messages.count--;
+    }
+    else {
+        *msg = mem->lp_messages.messages[mem->lp_messages.start_index];
+        mem->lp_messages.start_index++;
+        mem->lp_messages.count--;
+    }
+
+    sem_v(BUFFER_SEMAPHORE, semid);
 }
 
 short int is_queue_full(Queue_Mem* mem) {

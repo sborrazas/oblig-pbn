@@ -50,6 +50,7 @@ void queue_mem_delete(int shmid, int semid);
 
 short int queue_mem_add_origin(Queue_Mem* queue_mem, int semid);
 void queue_mem_remove_origin(Queue_Mem* mem, int semid);
-short int queue_mem_add_msg(Queue_Mem* mem, int semid, Message msg);
+void queue_mem_add_msg(Queue_Mem* mem, int semid, Message* msg);
+void queue_mem_remove_msg(Queue_Mem* mem, int semid, Message* msg);
 
 #endif

@@ -76,7 +76,7 @@ short int orig_receive_msg(int conn_fd, int* counter, const char* name) {
         msg.high_priority = orig_msg.high_priority;
         strcpy(msg.datetime, orig_msg.datetime);
 
-        queue_mem_add_msg(queue_mem, semid, msg);
+        queue_mem_add_msg(queue_mem, semid, &msg);
         mq_send_orig_ack(conn_fd, name, orig_msg.datetime);
         *counter = orig_msg.counter;
 
