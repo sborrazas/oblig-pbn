@@ -55,6 +55,7 @@ short int orig_connect(int conn_fd, char* name) {
     Syn_Msg syn_msg;
 
     mq_receive_syn(conn_fd, &syn_msg);
+    log_info("SYN(%s) recibido de orig con pid = %d", syn_msg.name, getpid());
 
     if (queue_mem_add_origin(queue_mem, semid) == -1) { // Too many origins
         mq_send_err(conn_fd, MQ_ERR_TOO_MANY_CLIENTS, name, syn_msg.datetime);
@@ -64,6 +65,7 @@ short int orig_connect(int conn_fd, char* name) {
     else {
         strcpy(name, syn_msg.name);
         mq_send_ack(conn_fd, syn_msg.name, syn_msg.datetime);
+        log_info("ACK enviado a orig con pid = %d", getpid());
 
         return 1;
     }
@@ -74,8 +76,12 @@ short int orig_receive_msg(int conn_fd, int* counter, const char* name) {
     Message msg;
 
     if (!mq_receive_msg(conn_fd, &msg_msg)) { // FIN
+        log_info("FIN recibido de orig con pid = %d", getpid());
         return -1;
     }
+
+    log_info("MSG(%d %d) recibido de orig con pid = %d", msg_msg.counter,
+             msg_msg.high_priority, getpid());
 
     if (msg_msg.counter > *counter) {
         strcpy(msg.orig_name, name);
@@ -85,11 +91,13 @@ short int orig_receive_msg(int conn_fd, int* counter, const char* name) {
 
         queue_mem_add_msg(queue_mem, semid, &msg);
         mq_send_ack(conn_fd, name, msg_msg.datetime);
+        log_info("ACK(%d) enviado a orig con pid = %d", msg_msg.counter, getpid());
         *counter = msg_msg.counter;
 
         return 1;
     }
     else {
+        log_info("ERR(%d) enviado a orig con pid = %d", msg_msg.counter, getpid());
         mq_send_err(conn_fd, MQ_ERR_INVALID_COUNTER, name, msg_msg.datetime);
 
         return 0;

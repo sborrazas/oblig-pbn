@@ -36,6 +36,8 @@ int main(int argc, char* const argv[]) {
         log_err("No se pudo registrar señales correctamente en origin_server.");
     }
 
+    log_info("Inicializando origin_server con proj_id = %d", proj_id);
+
     if ((queue_mem = queue_mem_connect(proj_id, &semid)) == NULL) {
         log_err("origin_server no pudo conectarse a shared_mem");
     }

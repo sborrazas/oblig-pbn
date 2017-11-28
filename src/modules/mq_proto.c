@@ -102,8 +102,6 @@ short int mq_receive_msg(int conn_fd, Msg_Msg* msg_msg) {
                 msg_msg->counter = counter;
                 msg_msg->high_priority = 1;
                 is_valid = 1;
-
-                printf("ALTA ARRIVED: %s %d %s\n", name, counter, datetime);
             }
             else if (sscanf(buffer, "%8"CHR SPC "%04d" SPC "BAJA" SPC "%19"CHR, name, &counter, datetime) == 3) {
                 strncpy(msg_msg->name, name, NAME_SIZE);
@@ -113,8 +111,6 @@ short int mq_receive_msg(int conn_fd, Msg_Msg* msg_msg) {
                 msg_msg->counter = counter;
                 msg_msg->high_priority = 0;
                 is_valid = 1;
-
-                printf("BAJA ARRIVED: %s %d %s\n", name, counter, datetime);
             }
             else {
                 mq_send_err(conn_fd, MQ_ERR_INVALID_MSG, DEFAULT_NAME, DEFAULT_DATETIME);

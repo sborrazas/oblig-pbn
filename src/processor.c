@@ -63,15 +63,15 @@ int main(int argc, char* const argv[]) {
     // Recibir ACK
     mq_receive_ack(conn_fd, &ack_msg);
 
-    for (i = 0; i < num_messages; i++) {
-        // Enviar mensaje:
-        printf("Enviando RDY %d\n", i);
+    for (i = 1; i <= num_messages; i++) {
         // Mandar RDY
+        log_info("Proc %s: Enviando RDY %d", name, i);
         mq_send_rdy(conn_fd, name);
         // Recibir ACK
         mq_receive_ack(conn_fd, &ack_msg);
         // Recibir MSG
         mq_receive_msg(conn_fd, &msg_msg);
+        log_info("Proc %s: Recibiendo MSG de %s: %d", name, msg_msg.name, msg_msg.counter);
         // Envio ACK
         mq_send_ack(conn_fd, name, ack_msg.datetime);
 
@@ -80,6 +80,7 @@ int main(int argc, char* const argv[]) {
 
     // Finalizar conexión
     // Mandar FIN
+    log_info("Proc %s: Enviando FIN", name);
     mq_send_fin(conn_fd, name);
     // Recibir ACK
     mq_receive_ack(conn_fd, &ack_msg);

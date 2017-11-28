@@ -69,8 +69,6 @@ void handle_sigchld() {
 }
 
 void handle_exit() {
-    printf("Terminando processor_server.. ");
-    // TODO: Kill remaining processors controllers
+    log_info("Terminando processor_server..");
     queue_mem_disconnect(queue_mem);
-    printf("Terminado.\n");
 }

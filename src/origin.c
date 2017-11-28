@@ -63,10 +63,9 @@ int main(int argc, char* const argv[]) {
     // Recibir ACK
     mq_receive_ack(conn_fd, &ack_msg);
 
-    for (i = 0; i < num_messages; i++) {
-        // Enviar mensaje:
-        printf("Enviando %d\n", i);
-        // Mandar NSG
+    for (i = 1; i <= num_messages; i++) {
+        log_info("Orig %s: Enviando MSG %d", name, i);
+        // Mandar MSG
         mq_send_msg(conn_fd, name, i, i % 2);
         // Recibir ACK
         mq_receive_ack(conn_fd, &ack_msg);
@@ -75,6 +74,7 @@ int main(int argc, char* const argv[]) {
 
     // Finalizar conexión
     // Mandar FIN
+    log_info("Orig %s: Enviando FIN", name);
     mq_send_fin(conn_fd, name);
     // Recibir ACK
     mq_receive_ack(conn_fd, &ack_msg);

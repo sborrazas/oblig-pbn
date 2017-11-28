@@ -35,7 +35,6 @@ int sem_create_with_flags(char *pathname, int proj_id, int count, int flags, sho
 }
 
 void sem_delete(int semid) {
-    printf("SEM DELTE\n");
     if (semctl(semid, 0, IPC_RMID) == -1){
         log_warn("Error en el semctl, no se pudo eliminar el semáforo.");
     }

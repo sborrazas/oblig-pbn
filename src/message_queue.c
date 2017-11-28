@@ -59,10 +59,8 @@ int main(int argc, char* const argv[]) {
 
     proj_id = random_max(MAX_PROJ_ID);
 
-    printf("max_msg = %d\n", max_msgs);
-    printf("max_origs = %d\n", max_origs);
-    printf("max_procs = %d\n", max_procs);
-    printf("proj_id = %d\n", proj_id);
+    log_info("Inicializando message_queue con max_msg = %d, max_origs = %d, "
+             "max_procs = %d, proj_id = %d", max_msgs, max_origs, max_procs, proj_id);
 
     queue_mem_create(max_msgs, max_origs, max_procs, proj_id, &shmid, &semid);
 
@@ -71,7 +69,9 @@ int main(int argc, char* const argv[]) {
     }
 
     origin_server_pid = fork_server("build/modules/origin_server", proj_id);
+    log_info("origin_server inicializado con pid %d", origin_server_pid);
     processor_server_pid = fork_server("build/modules/processor_server", proj_id);
+    log_info("processor_server inicializado con pid %d", processor_server_pid);
 
     in_menu_loop = 1;
 
@@ -110,17 +110,14 @@ void handle_sigchld() {
 
 void handle_exit() {
     if (origin_server_pid != 0) {
-        printf("Terminando origin_server.. ");
+        log_info("Matando origin_server con pid %d..", origin_server_pid);
         kill(origin_server_pid, SIGINT);
-        printf("Terminado.\n");
     }
     if (processor_server_pid != 0) {
-        printf("Terminando processor_server.. ");
+        log_info("Matando processor_server con pid %d..", processor_server_pid);
         kill(processor_server_pid, SIGINT);
-        printf("Terminado.\n");
     }
 
-    printf("Terminando message_queue.. ");
+    log_info("Terminando message_queue..");
     queue_mem_delete(shmid, semid);
-    printf("Terminado.\n");
 }
