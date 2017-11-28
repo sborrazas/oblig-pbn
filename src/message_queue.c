@@ -1,5 +1,6 @@
 #include <getopt.h>
 #include <signal.h>
+#include <sys/wait.h>
 #include "utils/debug.h"
 #include "utils/random.h"
 #include "utils/term.h"
@@ -37,7 +38,6 @@ void handle_sigchld();
 void handle_exit();
 
 int main(int argc, char* const argv[]) {
-    Queue_Mem* queue_mem;
     int proj_id;
     int max_msgs;
     int max_origs;
@@ -64,7 +64,7 @@ int main(int argc, char* const argv[]) {
     printf("max_procs = %d\n", max_procs);
     printf("proj_id = %d\n", proj_id);
 
-    queue_mem = queue_mem_create(max_msgs, max_origs, max_procs, proj_id, &shmid, &semid);
+    queue_mem_create(max_msgs, max_origs, max_procs, proj_id, &shmid, &semid);
 
     if (signals_termination(handle_sigchld, handle_exit) != 0) {
         log_err("No se pudo registrar señales correctamente en message_queue.");
@@ -98,12 +98,8 @@ void handle_sigchld() {
     int pid;
     int status;
 
-    printf("SIGCHLD lanzada a message_queue\n");
-
-    while ((pid = waitpid(WAIT_ANY, &status, WNOHANG)) != 0) {
-        if (pid < 0) {
-            log_err("Ocurrió un error al obtener pid de hijo.");
-        }
+    while ((pid = waitpid(WAIT_ANY, &status, WNOHANG)) > 0) {
+        log_info("SIGCHLD lanzada a message_queue con pid %d", pid);
 
         if (pid == origin_server_pid) origin_server_pid = 0;
         if (pid == processor_server_pid) processor_server_pid = 0;

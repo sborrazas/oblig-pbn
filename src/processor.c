@@ -2,6 +2,7 @@
 #include "utils/socket.h"
 #include "utils/debug.h"
 #include "utils/term.h"
+#include "utils/sig.h"
 #include "modules/mq_proto.h"
 
 #define DEFAULT_INTERVAL 10
@@ -15,13 +16,15 @@ static struct option processor_options[] = {
   {"num_messages", required_argument, 0, 'm'}
 };
 
+void handle_exit();
+
 char* processor_shortopts = "a:p:n:i:m:";
+int conn_fd;
 
 int main(int argc, char* const argv[]) {
     char* address;
     char* name;
     int port;
-    int conn_fd;
     int interval;
     int num_messages;
     Ack_Msg ack_msg;
@@ -48,6 +51,10 @@ int main(int argc, char* const argv[]) {
 
     if ((conn_fd = socket_connect(address, port)) < 0) {
         log_err("El servidor no está disponible.");
+    }
+
+    if (signals_termination(NULL, handle_exit) != 0) {
+        log_err("No se pudo registrar señales correctamente en message_queue.");
     }
 
     // Iniciar conexión
@@ -77,7 +84,11 @@ int main(int argc, char* const argv[]) {
     // Recibir ACK
     mq_receive_ack(conn_fd, &ack_msg);
 
-    socket_close(conn_fd);
-
     return 0;
+}
+
+void handle_exit() {
+    if (conn_fd > 0) {
+        socket_close(conn_fd);
+    }
 }

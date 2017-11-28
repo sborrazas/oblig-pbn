@@ -1,6 +1,7 @@
 #include <getopt.h>
 #include "../utils/debug.h"
 #include "../utils/term.h"
+#include "../utils/sig.h"
 #include "./queue_mem.h"
 #include "./mq_proto.h"
 
@@ -12,13 +13,14 @@ static char* shortopts = "p:c:";
 
 Queue_Mem* queue_mem;
 int semid;
+int conn_fd;
 
 short int orig_connect(int conn_fd, char* name);
 short int orig_receive_msg(int conn_fd, int* counter, const char* name);
+void handle_exit();
 
 int main(int argc, char* const argv[]) {
     int proj_id;
-    int conn_fd;
     char name[NAME_SIZE + 1];
     int counter;
 
@@ -29,7 +31,12 @@ int main(int argc, char* const argv[]) {
         log_err("Opción `--conn_fd` no presente. Finalizando..");
     }
 
-    printf("Iniciando origin_controller con proj_id = %d, conn_fd = %d\n", proj_id, conn_fd);
+    if (signals_termination(NULL, handle_exit) != 0) {
+        log_err("No se pudo registrar señales correctamente en origin_controller.");
+    }
+
+    log_info("Iniciando origin_controller con proj_id = %d, conn_fd = %d",
+             proj_id, conn_fd);
 
     if ((queue_mem = queue_mem_connect(proj_id, &semid)) == NULL) {
         log_err("origin_controller no pudo conectarse a shared_mem");
@@ -40,8 +47,6 @@ int main(int argc, char* const argv[]) {
 
         while (orig_receive_msg(conn_fd, &counter, name) != -1) ;
     }
-
-    socket_close(conn_fd);
 
     return 0;
 }
@@ -91,4 +96,8 @@ short int orig_receive_msg(int conn_fd, int* counter, const char* name) {
     }
 }
 
-// TODO: Signals handling
+void handle_exit() {
+    log_info("Terminando origin_controller con pid = %d", getpid());
+    socket_close(conn_fd);
+    queue_mem_disconnect(queue_mem);
+}

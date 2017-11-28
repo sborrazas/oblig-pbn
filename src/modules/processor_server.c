@@ -1,4 +1,5 @@
 #include <getopt.h>
+#include <sys/wait.h>
 #include "../utils/socket.h"
 #include "../utils/debug.h"
 #include "../utils/term.h"
@@ -20,12 +21,12 @@ int semid;
 void handle_sigchld();
 void handle_exit();
 
-
 int main(int argc, char* const argv[]) {
     int proj_id;
     int listen_fd;
     int conn_fd;
     short int is_active;
+    int pid;
 
     if ((proj_id = term_int_option(argc, argv, options, shortopts, 0)) == -1) {
         log_err("Opción `--proj_id` no presente. Finalizando..");
@@ -48,9 +49,9 @@ int main(int argc, char* const argv[]) {
             log_err("Error al aceptar una nueva conexión.");
         }
 
-        printf("Nueva conexión processor conn_fd = %d", conn_fd);
+        pid = fork_controller("build/modules/processor_controller", proj_id, conn_fd);
 
-        fork_controller("build/modules/processor_controller", proj_id, conn_fd);
+        log_info("Nueva conexión origin inicializada con pid = %d", pid);
     }
 
     return 0;
@@ -60,12 +61,8 @@ void handle_sigchld() {
     int pid;
     int status;
 
-    printf("SIGCHLD lanzada a processor_server\n");
-
-    while ((pid = waitpid(WAIT_ANY, &status, WNOHANG)) != 0) {
-        if (pid < 0) {
-            log_err("Ocurrió un error al obtener pid de hijo.");
-        }
+    while ((pid = waitpid(WAIT_ANY, &status, WNOHANG)) > 0) {
+        log_info("SIGCHLD lanzada a processor_server con pid %d", pid);
 
         queue_mem_remove_processor(queue_mem, semid);
     }

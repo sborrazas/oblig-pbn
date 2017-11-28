@@ -16,14 +16,17 @@ int signals_termination(void (*handle_sigchld)(int), void (*handle_exit)(void)) 
     if (signal(SIGTERM, SIG_IGN) != SIG_IGN) {
         signal(SIGTERM, handle_termination);
     }
-    if (signal(SIGCHLD, SIG_IGN) != SIG_IGN) {
-        signal(SIGCHLD, handle_sigchld);
+    if (handle_sigchld != NULL) {
+        if (signal(SIGCHLD, SIG_IGN) != SIG_IGN) {
+            signal(SIGCHLD, handle_sigchld);
+        }
     }
 
     return 0;
 }
 
 void handle_termination() {
-    printf("SIGINT lanzada\n");
-    //exit(EXIT_SUCCESS);
+    log_info("SIGINT lanzada a pid = %d", getpid());
+
+    exit(EXIT_SUCCESS);
 }
