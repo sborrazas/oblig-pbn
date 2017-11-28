@@ -31,9 +31,9 @@ typedef struct msg_msg {
     char datetime[DATE_SIZE + 1];
 } Msg_Msg;
 
-void mq_receive_syn(int conn_fd, Syn_Msg* syn_msg);
+short int mq_receive_syn(int conn_fd, Syn_Msg* syn_msg);
 short int mq_receive_msg(int conn_fd, Msg_Msg* msg_msg);
-void mq_send_err(int conn_fd, int err_num, const char* name, const char* datetime);
+short int mq_send_err(int conn_fd, int err_num, const char* name, const char* datetime);
 void mq_send_ack(int conn_fd, const char* name, const char* datetime);
 
 void mq_send_syn(int conn_fd, const char* name);

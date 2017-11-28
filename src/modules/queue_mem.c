@@ -7,15 +7,15 @@ void increase_index(int* index, Queue_Mem* mem);
 /* SARED_MEM ******************************************************************/
 /******************************************************************************/
 
-Queue_Mem* queue_mem_create(int max_msg, int max_orig, int max_proc, int proj_id, int* shmid, int* semid) {
+Queue_Mem* queue_mem_create(FILE* fp_log, int max_msg, int max_orig, int max_proc, int proj_id, int* shmid, int* semid) {
     Queue_Mem* queue_mem;
 
     if ((queue_mem = (Queue_Mem*)shared_mem_create(KEY_PATHNAME, proj_id, MEM_SIZE, shmid)) == NULL) {
-        log_err("No se pudo obtener la memoria compartida de tamaño %lu bytes.", MEM_SIZE);
+        log_err(fp_log, "No se pudo obtener la memoria compartida de tamaño %lu bytes.", MEM_SIZE);
     }
     if ((*semid = sem_create(KEY_PATHNAME, proj_id, SEMAPHORES_COUNT)) == -1) {
         shared_mem_delete(*shmid);
-        log_err("No se pudo obtener los %d semáforos.", SEMAPHORES_COUNT);
+        log_err(fp_log, "No se pudo obtener los %d semáforos.", SEMAPHORES_COUNT);
     }
 
     queue_mem->num_origins = 0;
@@ -38,15 +38,15 @@ Queue_Mem* queue_mem_create(int max_msg, int max_orig, int max_proc, int proj_id
     return queue_mem;
 }
 
-Queue_Mem* queue_mem_connect(int proj_id, int* semid) {
+Queue_Mem* queue_mem_connect(FILE* fp_log, int proj_id, int* semid) {
     Queue_Mem* queue_mem;
 
     if ((queue_mem = shared_mem_connect(KEY_PATHNAME, proj_id, MEM_SIZE)) == NULL) {
-        log_err("No se pudo conectar a la memoria compartida de tamaño %lu bytes.", MEM_SIZE);
+      log_err(fp_log, "No se pudo conectar a la memoria compartida de tamaño %lu bytes.", MEM_SIZE);
     }
     if ((*semid = sem_connect(KEY_PATHNAME, proj_id, SEMAPHORES_COUNT)) == -1) {
         shared_mem_disconnect(queue_mem);
-        log_err("No se pudo conectar para obtener los %d semáforos.", SEMAPHORES_COUNT);
+        log_err(fp_log, "No se pudo conectar para obtener los %d semáforos.", SEMAPHORES_COUNT);
     }
 
     return queue_mem;
@@ -77,7 +77,7 @@ short int queue_mem_add_origin(Queue_Mem* queue_mem, int semid) {
     return result;
 }
 
-void queue_mem_remove_origin(Queue_Mem* queue_mem, int semid) {
+short int queue_mem_remove_origin(Queue_Mem* queue_mem, int semid) {
     short int result;
 
     sem_p(ORIGINS_SEMAPHORE, semid);
@@ -86,9 +86,7 @@ void queue_mem_remove_origin(Queue_Mem* queue_mem, int semid) {
     }
     sem_v(ORIGINS_SEMAPHORE, semid);
 
-    if (!result) {
-        log_warn("Se intentó remover un origen cuando hay 0.");
-    }
+    return result;
 }
 
 short int queue_mem_add_processor(Queue_Mem* queue_mem, int semid) {
@@ -103,7 +101,7 @@ short int queue_mem_add_processor(Queue_Mem* queue_mem, int semid) {
     return result;
 }
 
-void queue_mem_remove_processor(Queue_Mem* queue_mem, int semid) {
+short int queue_mem_remove_processor(Queue_Mem* queue_mem, int semid) {
     short int result;
 
     sem_p(PROCESSORS_SEMAPHORE, semid);
@@ -112,9 +110,7 @@ void queue_mem_remove_processor(Queue_Mem* queue_mem, int semid) {
     }
     sem_v(PROCESSORS_SEMAPHORE, semid);
 
-    if (!result) {
-        log_warn("Se intentó remover un procesador cuando hay 0.");
-    }
+    return result;
 }
 
 void queue_mem_add_msg(Queue_Mem* mem, int semid, Message* msg) {

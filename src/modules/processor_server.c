@@ -64,7 +64,10 @@ void handle_sigchld() {
     while ((pid = waitpid(WAIT_ANY, &status, WNOHANG)) > 0) {
         log_info("SIGCHLD lanzada a processor_server con pid %d", pid);
 
-        queue_mem_remove_processor(queue_mem, semid);
+
+        if (!queue_mem_remove_processor(queue_mem, semid)) {
+            log_warn("Se intentó remover un procesador cuando hay 0.");
+        }
     }
 }
 

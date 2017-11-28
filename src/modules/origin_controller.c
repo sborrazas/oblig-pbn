@@ -45,7 +45,7 @@ int main(int argc, char* const argv[]) {
     if (orig_connect(conn_fd, name)) {
         counter = 0;
 
-        while (orig_receive_msg(conn_fd, &counter, name) != -1) ;
+        while (orig_receive_msg(conn_fd, &counter, name)) ;
     }
 
     return 0;
@@ -74,10 +74,15 @@ short int orig_connect(int conn_fd, char* name) {
 short int orig_receive_msg(int conn_fd, int* counter, const char* name) {
     Msg_Msg msg_msg;
     Message msg;
+    short int result;
 
-    if (!mq_receive_msg(conn_fd, &msg_msg)) { // FIN
-        log_info("FIN recibido de orig con pid = %d", getpid());
+    if ((result = mq_receive_msg(conn_fd, &msg_msg)) == -1) {
+        log_err("Ocurrió un error en la conexión del origen al obtener MSG/FIN.");
         return -1;
+    }
+    else if (result == 0) { // FIN
+        log_info("FIN recibido de orig con pid = %d", getpid());
+        return 0;
     }
 
     log_info("MSG(%d %d) recibido de orig con pid = %d", msg_msg.counter,
@@ -100,7 +105,7 @@ short int orig_receive_msg(int conn_fd, int* counter, const char* name) {
         log_info("ERR(%d) enviado a orig con pid = %d", msg_msg.counter, getpid());
         mq_send_err(conn_fd, MQ_ERR_INVALID_COUNTER, name, msg_msg.datetime);
 
-        return 0;
+        return 1;
     }
 }
 

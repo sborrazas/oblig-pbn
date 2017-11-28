@@ -17,6 +17,7 @@ static char* shortopts = "p:";
 
 Queue_Mem* queue_mem;
 int semid;
+FILE* fp_log;
 
 void handle_sigchld();
 void handle_exit();
@@ -66,7 +67,9 @@ void handle_sigchld() {
     while ((pid = waitpid(WAIT_ANY, &status, WNOHANG)) > 0) {
         log_info("SIGCHLD lanzada a origin_server con pid %d", pid);
 
-        queue_mem_remove_origin(queue_mem, semid);
+        if (!queue_mem_remove_origin(queue_mem, semid)) {
+            log_warn(fp_log, "Se intentó remover un origen cuando hay 0.");
+        }
     }
 }
 

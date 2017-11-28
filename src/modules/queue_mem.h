@@ -1,7 +1,7 @@
 #ifndef __QUEUE_MEM_H__
 #define __QUEUE_MEM_H__
 
-#include "../utils/debug.h"
+#include "../utils/log.h"
 #include "../utils/shared_mem.h"
 #include "../utils/sem.h"
 #include "mq_proto.h"
@@ -41,19 +41,19 @@ typedef struct queue_mem {
     int            max_messages;
 } Queue_Mem;
 
-Queue_Mem* queue_mem_create(int num_msg, int num_orig,
+Queue_Mem* queue_mem_create(FILE* fp_log, int num_msg, int num_orig,
                             int num_proc, int proj_id,
                             int* shmid, int* semid);
-Queue_Mem* queue_mem_connect(int proj_id, int* semid);
+Queue_Mem* queue_mem_connect(FILE* fp_log, int proj_id, int* semid);
 void queue_mem_disconnect(Queue_Mem* mem);
 void queue_mem_delete(int shmid, int semid);
 
 short int queue_mem_add_origin(Queue_Mem* queue_mem, int semid);
-void queue_mem_remove_origin(Queue_Mem* mem, int semid);
+short int queue_mem_remove_origin(Queue_Mem* mem, int semid);
 void queue_mem_add_msg(Queue_Mem* mem, int semid, Message* msg);
 void queue_mem_remove_msg(Queue_Mem* mem, int semid, Message* msg);
 
 short int queue_mem_add_processor(Queue_Mem* queue_mem, int semid);
-void queue_mem_remove_processor(Queue_Mem* mem, int semid);
+short int queue_mem_remove_processor(Queue_Mem* mem, int semid);
 
 #endif
