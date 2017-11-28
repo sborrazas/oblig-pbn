@@ -49,6 +49,12 @@ int main(int argc, char* const argv[]) {
         num_messages = DEFAULT_NUM_MESSAGES;
     }
 
+    // Llenar nombre con espacios hasta NAME_SIZE
+    for (i = strlen(name); i < NAME_SIZE; i++) {
+        name[i] = ' ';
+    }
+    name[NAME_SIZE] = '\0';
+
     if ((conn_fd = socket_connect(address, port)) < 0) {
         log_err("El servidor no está disponible.");
     }
@@ -65,13 +71,13 @@ int main(int argc, char* const argv[]) {
 
     for (i = 1; i <= num_messages; i++) {
         // Mandar RDY
-        log_info("Proc %s: Enviando RDY %d", name, i);
+        log_info("Proc `%s`: Enviando RDY %d", name, i);
         mq_send_rdy(conn_fd, name);
         // Recibir ACK
         mq_receive_ack(conn_fd, &ack_msg);
         // Recibir MSG
         mq_receive_msg(conn_fd, &msg_msg);
-        log_info("Proc %s: Recibiendo MSG de %s: %d", name, msg_msg.name, msg_msg.counter);
+        log_info("Proc `%s`: Recibiendo MSG de %s: %d", name, msg_msg.name, msg_msg.counter);
         // Envio ACK
         mq_send_ack(conn_fd, name, ack_msg.datetime);
 
@@ -80,7 +86,7 @@ int main(int argc, char* const argv[]) {
 
     // Finalizar conexión
     // Mandar FIN
-    log_info("Proc %s: Enviando FIN", name);
+    log_info("Proc `%s`: Enviando FIN", name);
     mq_send_fin(conn_fd, name);
     // Recibir ACK
     mq_receive_ack(conn_fd, &ack_msg);

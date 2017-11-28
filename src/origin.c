@@ -49,6 +49,12 @@ int main(int argc, char* const argv[]) {
         num_messages = DEFAULT_NUM_MESSAGES;
     }
 
+    // Llenar nombre con espacios hasta NAME_SIZE
+    for (i = strlen(name); i < NAME_SIZE; i++) {
+        name[i] = ' ';
+    }
+    name[NAME_SIZE] = '\0';
+
     if ((conn_fd = socket_connect(address, port)) < 0) {
         log_err("El servidor no está disponible");
     }
@@ -64,7 +70,7 @@ int main(int argc, char* const argv[]) {
     mq_receive_ack(conn_fd, &ack_msg);
 
     for (i = 1; i <= num_messages; i++) {
-        log_info("Orig %s: Enviando MSG %d", name, i);
+        log_info("Orig `%s`: Enviando MSG %d", name, i);
         // Mandar MSG
         mq_send_msg(conn_fd, name, i, i % 2);
         // Recibir ACK
@@ -74,7 +80,7 @@ int main(int argc, char* const argv[]) {
 
     // Finalizar conexión
     // Mandar FIN
-    log_info("Orig %s: Enviando FIN", name);
+    log_info("Orig `%s`: Enviando FIN", name);
     mq_send_fin(conn_fd, name);
     // Recibir ACK
     mq_receive_ack(conn_fd, &ack_msg);
