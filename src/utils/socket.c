@@ -49,19 +49,23 @@ int socket_connect(const char* address, uint16_t port) {
     return conn_fd;
 }
 
-void socket_close(int connfd) {
-    close(connfd);
+void socket_close(int conn_fd) {
+    close(conn_fd);
 }
 
-int socket_send(int connfd, char* buffer, int size) {
+int socket_send(int conn_fd, char* buffer, int size) {
     // size = bytes faltantes por enviar
     // bytes_read = bytes enviados
     // buffer = posición en el array a partir de donde leo
     ssize_t bytes_written;
 
     while (size > 0) {
-        if ((bytes_written = write(connfd, buffer, size)) == -1) {
-            log_warn("Error en el socket_send al enviar %d bytes.", size);
+        if ((bytes_written = write(conn_fd, buffer, size)) == -1) {
+            log_warn("Error en el socket_send al enviar %d bytes", size);
+            return -1;
+        }
+        if (bytes_written == 0) {
+            log_info("Socket finalizado");
             return -1;
         }
 
@@ -72,15 +76,19 @@ int socket_send(int connfd, char* buffer, int size) {
     return 0;
 }
 
-int socket_recv(int connfd, char* buffer, int size) {
+int socket_recv(int conn_fd, char* buffer, int size) {
     // size = bytes faltantes por recibir
     // bytes_read = bytes recibidos
     // buffer = posición en el array a partir de donde escribo
     ssize_t bytes_read;
 
     while (size > 0) {
-        if ((bytes_read = read(connfd, buffer, size)) == -1) {
-            log_warn("Error en el socket_recv al recibir %d bytes.", size);
+        if ((bytes_read = read(conn_fd, buffer, size)) == -1) {
+            log_warn("Error en el socket_recv al recibir %d bytes", size);
+            return -1;
+        }
+        if (bytes_read == 0) {
+            log_info("Socket finalizado");
             return -1;
         }
 
