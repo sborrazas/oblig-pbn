@@ -19,8 +19,7 @@ char* processor_shortopts = "a:p:n:i:m:";
 
 int main(int argc, char* const argv[]) {
     char* address;
-    char name[] = "       ";
-    char* opts_name;
+    char* name;
     int port;
     int conn_fd;
     int interval;
@@ -35,7 +34,7 @@ int main(int argc, char* const argv[]) {
     if ((port = term_int_option(argc, argv, processor_options, processor_shortopts, 1)) == -1) {
         log_err("Opción `--port` no presente. Finalizando..");
     }
-    if ((opts_name = term_str_option(argc, argv, processor_options, processor_shortopts, 2)) == NULL) {
+    if ((name = term_str_option(argc, argv, processor_options, processor_shortopts, 2)) == NULL) {
         log_err("Opción `--name` no presente. Finalizando..");
     }
     if ((interval = term_int_option(argc, argv, processor_options, processor_shortopts, 3)) == -1) {
@@ -50,9 +49,6 @@ int main(int argc, char* const argv[]) {
     if ((conn_fd = socket_connect(address, port)) < 0) {
         log_err("El servidor no está disponible.");
     }
-
-    strncpy(name, opts_name, 8);
-    name[8] = '\0';
 
     // Iniciar conexión
     // Mandar SYN

@@ -11,6 +11,29 @@ sistemas.
 
 ## Correr el proyecto
 
+Para correr el proyecto es necesario crear el archivo /etc/message_queue.mem y
+otorgar pemisos de escritura/lectura al usuario y grupo que ejecuta el programa.
+
+```
+$ sudo touch /etc/msg_queue.mem
+$ sudo chown <miuser>:<migrupo> /etc/msg_queue.mem
+```
+
+Luego para correr la cola de mensajes:
+
+```
+$ ./scripts/run_message_queue.sh
+```
+
+Para correr un orígen/procesador:
+
+```
+$ ./scripts/run_origin.sh
+$ ./scripts/run_processor.sh
+```
+
+Para correr múltiples orígenes y procesadores de forma automática:
+
 ```
 $ ./scripts/run_all.sh
 ```

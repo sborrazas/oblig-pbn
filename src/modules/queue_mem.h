@@ -6,7 +6,7 @@
 #include "../utils/sem.h"
 #include "mq_proto.h"
 
-#define KEY_PATHNAME "/etc/msg_queue.conf"
+#define KEY_PATHNAME "/etc/msg_queue.mem"
 #define MAX_MSGS 10000
 #define MEM_SIZE sizeof(Queue_Mem) + \
           sizeof(Message) * 2 * MAX_MSGS
