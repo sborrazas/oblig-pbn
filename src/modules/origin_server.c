@@ -68,6 +68,7 @@ int main(int argc, char* const argv[]) {
 }
 
 void handle_exit() {
+    kill(0, SIGINT);
     log_info("Terminando origin_server..");
     queue_mem_disconnect(queue_mem);
 }

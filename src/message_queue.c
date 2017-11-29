@@ -9,11 +9,9 @@
 #include "modules/queue_process.h"
 
 #define MAX_PROJ_ID 16777216
-#define DEFAULT_MAX_MSGS 4
-#define DEFAULT_MAX_ORIGS 4
-#define DEFAULT_MAX_PROCS 2
-#define ORIG_PORT 3000
-#define PROC_PORT 3000
+#define DEFAULT_MAX_MSGS 100
+#define DEFAULT_MAX_ORIGS 20
+#define DEFAULT_MAX_PROCS 20
 
 static struct option queue_options[] = {
   {"msgs",  required_argument,  0, 'm'},
