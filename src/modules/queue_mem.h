@@ -7,7 +7,7 @@
 #include "../utils/log.h"
 #include "mq_proto.h"
 
-#define KEY_PATHNAME "/etc/msg_queue.mem"
+#define KEY_PATHNAME "build/msg_queue.mem"
 #define MAX_MSGS 10000
 #define MEM_SIZE sizeof(Queue_Mem) + \
           sizeof(Message) * 2 * MAX_MSGS
