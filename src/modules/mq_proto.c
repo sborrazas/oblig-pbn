@@ -15,7 +15,7 @@ void mq_receive_syn(int conn_fd, Syn_Msg* syn_msg) {
 
     while (!is_valid) {
         if (socket_recv(conn_fd, buffer, 32) == -1) {
-            log_err("Ocurrió un error en la conexión del origen al obtener SYN.");
+            log_err("Ocurrió un error en la conexión del origen al recibir SYN.");
         }
         buffer[32] = '\0';
 
@@ -39,7 +39,7 @@ short int mq_receive_rdy(int conn_fd) {
 
     while (1) {
         if (socket_recv(conn_fd, buffer, 32) == -1) {
-            log_err("Ocurrió un error en la conexión del origen al obtener SYN.");
+            log_err("Ocurrió un error en la conexión del origen al recibir RDY.");
         }
         buffer[32] = '\0';
 
@@ -70,13 +70,13 @@ short int mq_receive_msg(int conn_fd, Msg_Msg* msg_msg) {
 
     while (!is_valid) {
         if (socket_recv(conn_fd, buffer, 4) == -1) {
-            log_err("Ocurrió un error en la conexión del origen al obtener MSG/FIN.");
+            log_err("Ocurrió un error en la conexión del origen al recibir MSG/FIN.");
         }
         buffer[4] = '\0';
 
         if (strcmp("FIN ", buffer) == 0) {
             if (socket_recv(conn_fd, buffer, 28) == -1) {
-                log_err("Ocurrió un error en la conexión del origen al obtener FIN.");
+                log_err("Ocurrió un error en la conexión del origen al recibir FIN.");
             }
 
             if (sscanf(buffer, "%8"CHR SPC "%19"CHR, name, datetime) == 2) {
@@ -90,7 +90,7 @@ short int mq_receive_msg(int conn_fd, Msg_Msg* msg_msg) {
         }
         else if (strcmp("MSG ", buffer) == 0) {
             if (socket_recv(conn_fd, buffer, 38) == -1) {
-                log_err("Ocurrió un error en la conexión del origen al obtener MSG.");
+                log_err("Ocurrió un error en la conexión del origen al recibir MSG.");
             }
             buffer[38] = '\0';
 
@@ -176,7 +176,7 @@ void mq_receive_ack(int conn_fd, Ack_Msg* ack_msg) {
     char datetime[DATE_SIZE + 1];
 
     if (socket_recv(conn_fd, buffer, 32) == -1) {
-        log_err("Ocurrió un error en la conexión del origen al obtener SYN.");
+        log_err("Ocurrió un error en la conexión del origen al recibir ACK.");
     }
     buffer[32] = '\0';
 
@@ -202,7 +202,7 @@ void mq_send_msg(int conn_fd, const char* name, int counter, short int high_prio
     }
 
     if (socket_send(conn_fd, buffer, 42) == -1) {
-        log_err("Ocurrió un error en la conexión del origen al enviar SYN.");
+        log_err("Ocurrió un error en la conexión del origen al enviar MSG.");
     }
 }
 

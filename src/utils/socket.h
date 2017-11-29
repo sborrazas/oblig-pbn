@@ -5,7 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include "debug.h"
+#include "log.h"
 
 #define MAX_WAITING_CONNECTIONS 10
 

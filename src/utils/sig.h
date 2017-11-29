@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "debug.h"
+#include "log.h"
 
 int signals_termination(void (*handle_sigchld)(int), void (*handle_exit)(void));
 

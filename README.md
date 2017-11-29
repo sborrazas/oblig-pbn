@@ -19,7 +19,7 @@ $ sudo touch /etc/msg_queue.mem
 $ sudo chown <miuser>:<migrupo> /etc/msg_queue.mem
 ```
 
-Luego para correr la cola de mensajes:
+Luego para correr la cola de mensajes (el archivo de logs será colocado en `~/msg_queue.log`):
 
 ```
 $ ./scripts/run_message_queue.sh
@@ -30,6 +30,12 @@ Para correr un orígen/procesador:
 ```
 $ ./scripts/run_origin.sh
 $ ./scripts/run_processor.sh
+```
+
+Para ver los logs en tiempo real:
+
+```
+$ tail -f ~/msg_queue.log
 ```
 
 Para correr múltiples orígenes y procesadores de forma automática:

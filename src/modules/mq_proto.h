@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include "../utils/socket.h"
+#include "../utils/log.h"
 
 #define NAME_SIZE 8
 #define DATE_SIZE 19

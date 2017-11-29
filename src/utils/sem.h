@@ -3,7 +3,7 @@
 
 #include <sys/sem.h>
 #include <sys/stat.h>
-#include "debug.h"
+#include "log.h"
 
 #define SEM_GREEN 1
 #define SEM_RED -1

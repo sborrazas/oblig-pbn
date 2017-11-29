@@ -10,7 +10,8 @@
 #define PROCESSOR_SERVER_PORT 4000
 
 static struct option options[] = {
-  {"proj_id", required_argument,  0, 'p'}
+  {"proj_id", required_argument,  0, 'p'},
+  {"log_file", required_argument, 0, 'l'}
 };
 
 static char* shortopts = "p:";
@@ -18,7 +19,6 @@ static char* shortopts = "p:";
 Queue_Mem* queue_mem;
 int semid;
 
-void handle_sigchld();
 void handle_exit();
 
 int main(int argc, char* const argv[]) {
@@ -26,15 +26,25 @@ int main(int argc, char* const argv[]) {
     int listen_fd;
     int conn_fd;
     short int is_active;
+    char* log_filepath;
     int pid;
 
+    if ((log_filepath = term_str_option(argc, argv, options, shortopts, 1)) == NULL) {
+        print_err("Opción requerida `--log_file` no presente. Finalizando..");
+    }
+    if (log_open(log_filepath) == -1) {
+        print_err("Archivo de log `%s` no tiene permisos para ser abierto.",
+                  log_filepath);
+    }
     if ((proj_id = term_int_option(argc, argv, options, shortopts, 0)) == -1) {
         log_err("Opción `--proj_id` no presente. Finalizando..");
     }
 
-    if (signals_termination(handle_sigchld, handle_exit) != 0) {
+    if (signals_termination(NULL, handle_exit) != 0) {
         log_err("No se pudo registrar señales correctamente en origin_server.");
     }
+
+    log_info("Inicializando processor_server con proj_id = %d", proj_id);
 
     if ((queue_mem = queue_mem_connect(proj_id, &semid)) == NULL) {
         log_err("origin_server no pudo conectarse a shared_mem");
@@ -49,23 +59,12 @@ int main(int argc, char* const argv[]) {
             log_err("Error al aceptar una nueva conexión.");
         }
 
-        pid = fork_controller("build/modules/processor_controller", proj_id, conn_fd);
+        pid = fork_controller("build/modules/processor_controller", log_filepath, proj_id, conn_fd);
 
         log_info("Nueva conexión origin inicializada con pid = %d", pid);
     }
 
     return 0;
-}
-
-void handle_sigchld() {
-    int pid;
-    int status;
-
-    while ((pid = waitpid(WAIT_ANY, &status, WNOHANG)) > 0) {
-        log_info("SIGCHLD lanzada a processor_server con pid %d", pid);
-
-        queue_mem_remove_processor(queue_mem, semid);
-    }
 }
 
 void handle_exit() {

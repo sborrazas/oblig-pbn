@@ -3,7 +3,7 @@
 
 #include <sys/shm.h>
 #include <sys/stat.h>
-#include "debug.h"
+#include "log.h"
 
 void* shared_mem_create(const char* pathname, int proj_id, int size, int* shmaddr);
 

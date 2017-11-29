@@ -4,6 +4,7 @@
 #include "../utils/debug.h"
 #include "../utils/shared_mem.h"
 #include "../utils/sem.h"
+#include "../utils/log.h"
 #include "mq_proto.h"
 
 #define KEY_PATHNAME "/etc/msg_queue.mem"
