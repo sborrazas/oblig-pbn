@@ -40,7 +40,10 @@ typedef struct queue_mem {
     int            num_processors;
     int            max_processors;
     int            max_messages;
+    int            num_available_processors;
 } Queue_Mem;
+
+Message output_messages[MAX_MSGS];
 
 Queue_Mem* queue_mem_create(int num_msg, int num_orig,
                             int num_proc, int proj_id,
@@ -56,5 +59,10 @@ void queue_mem_remove_msg(Queue_Mem* mem, int semid, Message* msg);
 
 short int queue_mem_add_processor(Queue_Mem* queue_mem, int semid);
 void queue_mem_remove_processor(Queue_Mem* mem, int semid);
+
+int queue_mem_available_processors(Queue_Mem* queue_mem, int semid);
+int queue_mem_busy_processors(Queue_Mem* queue_mem, int semid);
+int queue_mem_messages_count(Queue_Mem* queue_mem, int semid, short int high_priority);
+Message* queue_mem_messages(Queue_Mem* queue_mem, int semid, int* size);
 
 #endif

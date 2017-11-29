@@ -52,6 +52,8 @@ int main(int argc, char* const argv[]) {
     char* log_filepath;
     int i;
     int size;
+    Queue_Mem* queue_mem;
+    Message* pending_messages;
 
     if ((log_filepath = term_str_option(argc, argv, queue_options, queue_shortopts, 3)) == NULL) {
         print_err("Opción requerida `--log_file` no presente.");
@@ -79,7 +81,7 @@ int main(int argc, char* const argv[]) {
     log_info("Inicializando message_queue con max_msg = %d, max_origs = %d, "
              "max_procs = %d, proj_id = %d", max_msgs, max_origs, max_procs, proj_id);
 
-    queue_mem_create(max_msgs, max_origs, max_procs, proj_id, &shmid, &semid);
+    queue_mem = queue_mem_create(max_msgs, max_origs, max_procs, proj_id, &shmid, &semid);
 
     if (signals_termination(handle_sigchld, handle_exit) != 0) {
         log_err("No se pudo registrar señales correctamente en message_queue.");
@@ -95,45 +97,38 @@ int main(int argc, char* const argv[]) {
     in_menu_loop = 1;
 
     while (in_menu_loop) {
-        switch (term_get_menu_option(menu_options, 3)) {
+        switch (term_get_menu_option(menu_options, 6)) {
         case 0: // Entrada del programa terminada
             in_menu_loop = 0;
             break;
         case 1: // Cantidad de procesadores disponibles
-            term_print_info_init();
-            printf("# procesadores disponibles: %d\n",
+            printf(">> # procesadores disponibles: %d\n",
                    queue_mem_available_processors(queue_mem, semid));
-            term_print_info_end();
             break;
         case 2: // Cantidad de datos siendo procesados
-            term_print_info_init();
-            printf("# datos siendo procesados: %d\n",
+            printf(">> # datos siendo procesados: %d\n",
                    queue_mem_busy_processors(queue_mem, semid));
-            term_print_info_end();
             break;
         case 3: // Cantidad de datos de alta prioridad
-            term_print_info_init();
-            printf("# mensajes de alta prioridad: %d\n",
+            printf(">> # mensajes de alta prioridad: %d\n",
                    queue_mem_messages_count(queue_mem, semid, 1));
-            term_print_info_end();
             break;
         case 4: // Cantidad de datos de baja prioridad
-            term_print_info_init();
-            printf("# mensajes de baja prioridad: %d\n",
+            printf(">> # mensajes de baja prioridad: %d\n",
                    queue_mem_messages_count(queue_mem, semid, 0));
-            term_print_info_end();
             break;
         case 5: // Detalle de los datos en la lista de espera
-            term_print_info_init();
             pending_messages = queue_mem_messages(queue_mem, semid, &size);
-            for (i = 1; i <= size; i++) {
-                printf("%d. %s %04d %s %s", i,
+            for (i = 0; i < size; i++) {
+                printf("%d. %s %04d %s %s\n", i + 1,
                        pending_messages[i].orig_name,
                        pending_messages[i].counter,
                        pending_messages[i].high_priority ? "ALTA" : "BAJA",
                        pending_messages[i].datetime);
             }
-            term_print_info_end();
+            if (size == 0) {
+                printf(">> No hay mensajes en la cola\n");
+            }
             break;
         case 6: // Salir
             in_menu_loop = 0;
@@ -172,4 +167,5 @@ void handle_exit() {
     queue_mem_delete(shmid, semid);
 
     log_close();
+    printf("Bye!\n");
 }

@@ -23,6 +23,7 @@ Queue_Mem* queue_mem_create(int max_msg, int max_orig, int max_proc, int proj_id
     queue_mem->num_processors = 0;
     queue_mem->max_processors = max_proc;
     queue_mem->max_messages = max_msg;
+    queue_mem->num_available_processors = 0;
 
     queue_mem->hp_messages.count = 0;
     queue_mem->hp_messages.start_index = 0;
@@ -155,6 +156,10 @@ void queue_mem_add_msg(Queue_Mem* mem, int semid, Message* msg) {
 }
 
 void queue_mem_remove_msg(Queue_Mem* mem, int semid, Message* msg) {
+    sem_p(PROCESSORS_SEMAPHORE, semid);
+    mem->num_available_processors++;
+    sem_v(PROCESSORS_SEMAPHORE, semid);
+
     sem_p(FULL_SEMAPHORE, semid);
     sem_p(BUFFER_SEMAPHORE, semid);
 
@@ -170,6 +175,10 @@ void queue_mem_remove_msg(Queue_Mem* mem, int semid, Message* msg) {
     }
 
     sem_v(BUFFER_SEMAPHORE, semid);
+
+    sem_p(PROCESSORS_SEMAPHORE, semid);
+    mem->num_available_processors--;
+    sem_v(PROCESSORS_SEMAPHORE, semid);
 }
 
 short int is_queue_full(Queue_Mem* mem) {
@@ -180,4 +189,65 @@ void increase_index(int* index, Queue_Mem* mem) {
     int queues_size = mem->max_messages;
 
     *index = (*index + 1) % queues_size;
+}
+
+int queue_mem_available_processors(Queue_Mem* queue_mem, int semid) {
+    int result;
+
+    sem_p(PROCESSORS_SEMAPHORE, semid);
+
+    result = queue_mem->num_available_processors;
+
+    sem_v(PROCESSORS_SEMAPHORE, semid);
+
+    return result;
+}
+
+int queue_mem_busy_processors(Queue_Mem* queue_mem, int semid) {
+    int result;
+
+    sem_p(PROCESSORS_SEMAPHORE, semid);
+
+    result = queue_mem->num_processors - queue_mem->num_available_processors;
+
+    sem_v(PROCESSORS_SEMAPHORE, semid);
+
+    return result;
+}
+
+int queue_mem_messages_count(Queue_Mem* queue_mem, int semid, short int high_priority) {
+    int result;
+
+    sem_p(BUFFER_SEMAPHORE, semid);
+
+    result = high_priority ? queue_mem->hp_messages.count : queue_mem->lp_messages.count;
+
+    sem_v(BUFFER_SEMAPHORE, semid);
+
+    return result;
+}
+
+Message* queue_mem_messages(Queue_Mem* queue_mem, int semid, int* size) {
+    int i, j;
+    int pos;
+
+    i = 0;
+    j = 0;
+
+    sem_p(BUFFER_SEMAPHORE, semid);
+
+    for (i = 0; i < queue_mem->hp_messages.count; i++) {
+        pos = (queue_mem->hp_messages.start_index + i) % queue_mem->max_messages;
+        output_messages[j++] = queue_mem->hp_messages.messages[pos];
+    }
+    for (i = 0; i < queue_mem->lp_messages.count; i++) {
+        pos = (queue_mem->lp_messages.start_index + i) % queue_mem->max_messages;
+        output_messages[j++] = queue_mem->lp_messages.messages[pos];
+    }
+
+    sem_v(BUFFER_SEMAPHORE, semid);
+
+    *size = j;
+
+    return output_messages;
 }
