@@ -9,7 +9,7 @@
 #include "modules/queue_process.h"
 
 #define MAX_PROJ_ID 16777216
-#define DEFAULT_MAX_MSGS 100
+#define DEFAULT_MAX_MSGS 10
 #define DEFAULT_MAX_ORIGS 20
 #define DEFAULT_MAX_PROCS 20
 
